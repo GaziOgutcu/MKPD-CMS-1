@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Vehicle</title>
+</head>
+<body>
+    <h1>Update Vehicle</h1>
+    <form method="POST">
+        <form action="{{ url_for('update_vehicle') }}" method="POST" style="display:inline;">
+            <input type="hidden" name="plate_to_update" value="{{ vehicle.Plate }}">
+            <input type="text" name="rego_renewal_update" placeholder="Rego Renewal Date" required>
+            <input type="text" name="expiry_update" placeholder="Expiry" required>
+            <button type="submit">Update</button>
+        </form>
+    </form>
+</body>
+</html>

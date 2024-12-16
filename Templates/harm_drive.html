@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harm Drive Pty Ltd</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom CSS -->
+    <style>
+        /* Navbar Styling */
+        .navbar {
+            background-color: #003366; /* Navy blue background */
+            padding: 10px 20px;
+        }
+
+        .navbar a {
+            color: white; /* Set link color */
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .navbar a:hover, .dropdown-item:hover {
+            color: yellow; /* Highlight links on hover */
+        }
+
+        .dropdown-menu {
+            background-color: #003366; /* Match dropdown with navbar */
+        }
+
+        .dropdown-item {
+            color: white; /* Dropdown link color */
+        }
+
+        .dropdown-item:hover {
+            background-color: #00509e; /* Highlight dropdown item */
+        }
+
+        /* Logo Styling */
+        .logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            font-family: 'Futura', sans-serif; /* Modern font */
+        }
+
+        .logo-mkpd {
+            font-size: 1.2rem;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .logo-cms {
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        /* Main Logo Styling */
+        .main-logo {
+            max-width: 300px; /* Increased size for the logo */
+        }
+
+        .welcome-text {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .welcome-text h1 {
+            font-size: 3rem;
+            color: #003366;
+            font-weight: bold;
+        }
+
+        .welcome-text p {
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .welcome-text .btn-primary {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 1.1rem;
+        }
+
+
+
+        .add-vehicle-form {
+            margin-top: 20px;
+        }
+
+        .add-vehicle-section {
+            margin-bottom: 50px; /* Adds space after Add Vehicle section */
+        }
+
+        .copyright {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            padding: 10px;
+            font-size: 12px;
+            color: #6c757d;
+            background-color: #f8f9fa;
+            border-top-left-radius: 5px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid">
+        <a class="navbar-brand logo" href="{{ url_for('index') }}">
+            <span class="logo-mkpd">MKPD</span>
+            <span class="logo-cms">CMS</span>
+        </a>
+
+        <!-- Navigation Menu -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <!-- Companies Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="companiesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Companies
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="companiesDropdown">
+                        <li><a class="dropdown-item" href="/view_company">View Companies</a></li>
+                        <li><a class="dropdown-item" href="/add_company">Add Company</a></li>
+                    </ul>
+                </li>
+
+                <!-- Harm Drive -->
+                <li class="nav-item"><a class="nav-link" href="/harm_drive">Harm Drive</a></li>
+
+                <!-- Employees Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="employeesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Employees
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="employeesDropdown">
+                        <li><a class="dropdown-item" href="/add_employee">Add Employee</a></li>
+                        <li><a class="dropdown-item" href="/search_employee">Search Employee</a></li>
+                    </ul>
+                </li>
+
+                <!-- Projects Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="projectsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Projects
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="projectsDropdown">
+                        <li><a class="dropdown-item" href="/add_project">Add a Project</a></li>
+                        <li><a class="dropdown-item" href="/view_projects">View Projects</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- Logout -->
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+    <!-- Main Logo Section -->
+    <div class="text-center my-4">
+        <a href="/">
+            <img src="{{ url_for('static', filename='logo1.jpg') }}" alt="Company Logo" class="img-fluid mb-4 main-logo">
+        </a>
+    </div>
+
+    <!-- Page Title -->
+    <div class="container text-center mb-4">
+    <h1 class="text-dark">Harm Drive Pty Ltd</h1>
+    </div>
+
+
+    <!-- Vehicle Table -->
+    <div class="container">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Plate</th>
+                        <th>Type</th>
+                        <th>VIN</th>
+                        <th>Rego Renewal Date</th>
+                        <th>Insurance Renewal (CTP) Date</th>
+                        <th>Expiry (Days)</th>
+                        <th>Value</th>
+                        <th>Transfer Fee</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehicle in vehicles %}
+                    <tr>
+                        <td>{{ vehicle['Plate'] }}</td>
+                        <td>{{ vehicle['Type'] }}</td>
+                        <td>{{ vehicle['VIN'] }}</td>
+                        <td>{{ vehicle['Rego Renewal Date']|datetimeformat }}</td>
+                        <td>{{ vehicle['Insurance Renewal (CTP) Date']|datetimeformat }}</td>
+                        <td>{{ vehicle['Expiry'] }} Days</td>
+                        <td>${{ "%.2f"|format(vehicle['Value']) }}</td>
+                        <td>${{ "%.2f"|format(vehicle['Transfer Fee']) }}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#updateModal"
+                                    data-plate="{{ vehicle['Plate'] }}"
+                                    aria-label="Update Vehicle">
+                                Update
+                            </button>
+                            <button class="btn btn-danger btn-sm"
+                                    data-plate="{{ vehicle['Plate'] }}"
+                                    onclick="deleteVehicle(this)"
+                                    aria-label="Delete Vehicle">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+        <!-- Add New Vehicle -->
+    <div class="container add-vehicle-section">
+        <h3>Add New Vehicle</h3>
+        <form method="POST" action="/add_vehicle" class="row g-3">
+            <div class="col-md-3">
+                <input type="text" name="plate" class="form-control" placeholder="Plate" required aria-label="Plate">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="type" class="form-control" placeholder="Type" required aria-label="Type">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="vin" class="form-control" placeholder="VIN" required aria-label="VIN">
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="rego_renewal_date" class="form-control" required aria-label="Rego Renewal Date">
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="ctp_date" class="form-control" placeholder="CTP Date" aria-label="CTP Date">
+            </div>
+            <div class="col-md-3">
+                <input type="number" name="value" class="form-control" placeholder="Value" required aria-label="Value">
+            </div>
+            <div class="col-md-3">
+                <input type="number" name="transfer_fee" class="form-control" placeholder="Transfer Fee" aria-label="Transfer Fee">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-success w-100">Add Vehicle</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="copyright">
+        &copy; 2024 Gazi OGUTCU. All rights reserved.
+    </div>
+</body>
+</html>
+
+    <!-- Update Modal -->
+    <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateModalLabel">Update Rego Renewal Date</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="/update_vehicle">
+                    <div class="modal-body">
+                        <input type="hidden" id="plateToUpdate" name="plate_to_update">
+                        <div class="mb-3">
+                            <label for="newRegoRenewalDate" class="form-label">New Rego Renewal Date</label>
+                            <input type="date" class="form-control" id="newRegoRenewalDate" name="new_rego_renewal_date" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Delete -->
+    <script>
+        function deleteVehicle(button) {
+            const plate = button.getAttribute('data-plate');
+            if (confirm(`Are you sure you want to delete the vehicle with plate ${plate}?`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/delete_vehicle';
+                form.innerHTML = `<input type="hidden" name="plate_to_delete" value="${plate}">`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+
+    <!-- JavaScript for Update Modal -->
+    <script>
+        const updateModal = document.getElementById('updateModal');
+        updateModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const plate = button.getAttribute('data-plate');
+            document.getElementById('plateToUpdate').value = plate;
+        });
+    </script>
+
+    <!-- Footer -->
+    <div class="copyright">
+        &copy; 2024 Gazi OGUTCU. All rights reserved.
+    </div>
+
+</body>
+</html>
