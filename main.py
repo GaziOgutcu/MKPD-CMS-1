@@ -752,5 +752,4 @@ def download_file(filename):
         return redirect(url_for("view_company"))
 
 if __name__ == "__main__":
-    setup_environment()
-    app.run(host="192.168.1.13", port=5000, debug=True)
+    app.run
