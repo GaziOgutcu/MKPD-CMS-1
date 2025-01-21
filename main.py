@@ -10,6 +10,10 @@ import requests
 app = Flask(__name__)
 app.secret_key = "super_secret_key"
 
+print(f"Secret Key: {app.secret_key}")
+
+print(app.jinja_loader.searchpath)
+
 # Constants
 EXCEL_FILE = os.path.join(os.getcwd(), "CompanyData.xlsx")
 MAIN_DIR = "CompanyFolders"
@@ -750,6 +754,5 @@ def download_file(filename):
     except Exception as e:
         flash(f"Error downloading file: {e}", "error")
         return redirect(url_for("view_company"))
-
 if __name__ == "__main__":
     app.run
