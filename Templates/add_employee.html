@@ -96,60 +96,58 @@
 <body class="bg-light">
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-custom">
+    <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
+        <!-- Logo -->
         <a class="navbar-brand logo" href="{{ url_for('index') }}">
             <span class="logo-mkpd">MKPD</span>
             <span class="logo-cms">CMS</span>
         </a>
 
-        <!-- Navigation Menu -->
+        <!-- ✅ Navbar Toggler Button (MISSING in your code) -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar Links -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
-                <!-- Companies Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="companiesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Companies
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="companiesDropdown">
+                    <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="/view_company">View Companies</a></li>
                         <li><a class="dropdown-item" href="/add_company">Add Company</a></li>
                     </ul>
                 </li>
-
-                <!-- Harm Drive -->
                 <li class="nav-item"><a class="nav-link" href="/harm_drive">Harm Drive</a></li>
-
-                <!-- Employees Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="employeesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Employees
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="employeesDropdown">
+                    <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="/add_employee">Add Employee</a></li>
                         <li><a class="dropdown-item" href="/search_employee">Search Employee</a></li>
                     </ul>
                 </li>
-
-                <!-- Projects Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="projectsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Projects
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="projectsDropdown">
+                    <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="/add_project">Add a Project</a></li>
                         <li><a class="dropdown-item" href="/view_projects">View Projects</a></li>
                     </ul>
                 </li>
             </ul>
-
-            <!-- Logout -->
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
             </ul>
         </div>
     </div>
 </nav>
+
 
     <!-- Logo Section -->
     <div class="text-center my-4">
