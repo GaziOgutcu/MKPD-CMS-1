@@ -18,57 +18,8 @@
 </head>
 <body class="bg-light">
 
-<nav class="navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <!-- Logo -->
-        <a class="navbar-brand logo" href="{{ url_for('index') }}">
-            <span class="logo-mkpd">MKPD</span>
-            <span class="logo-cms">CMS</span>
-        </a>
-
-        <!-- ✅ Navbar Toggler Button (MISSING in your code) -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <!-- Navbar Links -->
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="companiesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Companies
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="/view_company">View Companies</a></li>
-                        <li><a class="dropdown-item" href="/add_company">Add Company</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item"><a class="nav-link" href="/harm_drive">Harm Drive</a></li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="employeesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Employees
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="/add_employee">Add Employee</a></li>
-                        <li><a class="dropdown-item" href="/search_employee">Search Employee</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="projectsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Projects
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="/add_project">Add a Project</a></li>
-                        <li><a class="dropdown-item" href="/view_projects">View Projects</a></li>
-                    </ul>
-                </li>
-            </ul>
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
+<!-- ✅ Navbar Placeholder (Loads navbar dynamically) -->
+<div id="navbar-placeholder"></div>
 
 <!-- Welcome Text Section -->
 <div class="text-center my-4">
@@ -250,5 +201,22 @@
 
 <!-- Footer -->
 <div class="text-center mt-5">
-    <p class="small text-muted">&copy; 2024 Harm Drive Pty Ltd. All rights reserved.</p>
+    <p class="small text-muted">&copy; 2024 Gazi OGUTCU. All rights reserved.</p>
 </div>
+
+<!-- ✅ JavaScript to Load Navbar -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("/navbar")  // ✅ Fetch from Flask route
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Navbar file not found!");
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById("navbar-placeholder").innerHTML = data;
+            })
+            .catch(error => console.error("Error loading navbar:", error));
+    });
+</script>
