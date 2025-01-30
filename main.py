@@ -157,6 +157,16 @@ def get_qld_construction_news():
         print(f"Error parsing response JSON: {e}")
         return []
 
+# ✅ Route to serve the Navbar file
+@app.route("/navbar")
+def navbar():
+    return render_template("navbar.html")
+
+# ✅ Route to render the Add Company page
+@app.route("/add_company")
+def add_company():
+    return render_template("add_company.html")
+
 @app.template_filter('datetimeformat')
 def datetimeformat(value):
     """

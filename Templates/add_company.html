@@ -98,7 +98,7 @@
     <!-- ✅ JavaScript to Load Navbar -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            fetch("templates/navbar.html") // Ensure this matches the actual file path
+            fetch("/navbar")  // ✅ Fetch from Flask route
                 .then(response => {
                     if (!response.ok) {
                         throw new Error("Navbar file not found!");
@@ -111,6 +111,7 @@
                 .catch(error => console.error("Error loading navbar:", error));
         });
     </script>
+    
     
 
     <!-- ✅ Bootstrap JS (kept at the bottom for better performance) -->
