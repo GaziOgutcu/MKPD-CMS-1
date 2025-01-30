@@ -84,10 +84,18 @@
 
 <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
+        <!-- Logo -->
         <a class="navbar-brand logo" href="{{ url_for('index') }}">
             <span class="logo-mkpd">MKPD</span>
             <span class="logo-cms">CMS</span>
         </a>
+
+        <!-- ✅ Navbar Toggler Button (MISSING in your code) -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar Links -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item dropdown">
