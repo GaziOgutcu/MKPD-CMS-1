@@ -1,27 +1,33 @@
 .navbar {
-    background-color: #ADD8E6 !important; /* Light Blue */
+    background-color: #003366 !important; /* Dark Blue */
     padding: 10px 20px;
-    opacity: 1; /* Ensure it's fully opaque */
+    opacity: 1;
 }
 
 .navbar a {
-    color: rgb(225, 52, 52);
+    color: white; /* Changed from red to white for better contrast */
     font-size: 16px;
     font-weight: bold;
     text-decoration: none;
 }
+
 .navbar a:hover, .dropdown-item:hover {
     color: yellow;
 }
+
 .dropdown-menu {
     background-color: #003366;
 }
+
 .dropdown-item {
     color: white;
 }
+
 .dropdown-item:hover {
     background-color: #00509e;
 }
+
+/* Rest of your existing styles remain unchanged */
 .logo {
     display: flex;
     flex-direction: column;
@@ -30,31 +36,38 @@
     color: white;
     font-family: 'Futura', sans-serif;
 }
+
 .logo-mkpd {
     font-size: 1.2rem;
     font-weight: bold;
     line-height: 1;
 }
+
 .logo-cms {
     font-size: 1rem;
     line-height: 1;
 }
+
 .main-logo {
     max-width: 300px;
 }
+
 .welcome-text {
     text-align: center;
     margin-top: 50px;
 }
+
 .welcome-text h1 {
     font-size: 3rem;
     color: #003366;
     font-weight: bold;
 }
+
 .welcome-text p {
     font-size: 1.2rem;
     color: #666;
 }
+
 .copyright {
     position: fixed;
     bottom: 0;
@@ -66,10 +79,10 @@
     border-top-left-radius: 5px;
 }
 
-/* ✅ White Navbar Toggle Button */
 .navbar-toggler {
-    border-color: white !important; /* White border */
+    border-color: white !important;
 }
+
 .navbar-toggler-icon {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='white' stroke-width='3' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E") !important;
 }
