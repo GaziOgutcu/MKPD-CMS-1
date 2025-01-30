@@ -1,6 +1,7 @@
 .navbar {
-    background-color: #ADD8E6; /* ✅ Light Blue */
+    background-color: #ADD8E6 !important; /* Light Blue */
     padding: 10px 20px;
+    opacity: 1; /* Ensure it's fully opaque */
 }
 
 .navbar a {
