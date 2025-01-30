@@ -157,6 +157,9 @@ def get_qld_construction_news():
         print(f"Error parsing response JSON: {e}")
         return []
 
+print(f"Error parsing response JSON: {e}")
+return []
+
 # ✅ Route to serve the Navbar file
 @app.route("/navbar")
 def navbar():
@@ -166,6 +169,13 @@ def navbar():
 @app.route("/add_company")
 def add_company():
     return render_template("add_company.html")
+
+# ✅ Flask Template Filter (Ensure it is placed AFTER all routes)
+@app.template_filter('datetimeformat')
+def datetimeformat(value):
+    """Format datetime values for templates."""
+    return value.strftime("%Y-%m-%d %H:%M:%S") if value else ""
+
 
 @app.template_filter('datetimeformat')
 def datetimeformat(value):
