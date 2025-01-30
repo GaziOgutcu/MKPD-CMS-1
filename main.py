@@ -157,8 +157,6 @@ def get_qld_construction_news():
         print(f"Error parsing response JSON: {e}")
         return []
 
-print(f"Error parsing response JSON: {e}")
-return []
 
 # ✅ Route to serve the Navbar file
 @app.route("/navbar")
@@ -170,25 +168,6 @@ def navbar():
 def add_company():
     return render_template("add_company.html")
 
-# ✅ Flask Template Filter (Ensure it is placed AFTER all routes)
-@app.template_filter('datetimeformat')
-def datetimeformat(value):
-    """Format datetime values for templates."""
-    return value.strftime("%Y-%m-%d %H:%M:%S") if value else ""
-
-
-@app.template_filter('datetimeformat')
-def datetimeformat(value):
-    """
-    Convert a date string from 'YYYY-MM-DD' to 'DD/MM/YYYY'.
-    :param value: Date string in 'YYYY-MM-DD' format.
-    :return: Formatted date string in 'DD/MM/YYYY' format or the original value if invalid.
-    """
-    try:
-        return datetime.strptime(value, '%Y-%m-%d').strftime('%d/%m/%Y')
-    except Exception:
-        return value
-
 @app.template_filter('datetimeformat')
 def datetimeformat(value):
     """
@@ -197,7 +176,8 @@ def datetimeformat(value):
     try:
         return datetime.strptime(value, '%Y-%m-%d').strftime('%d/%m/%Y')
     except Exception:
-        return value
+        return value  # If the date is invalid, return the original value
+
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -774,5 +754,6 @@ def download_file(filename):
     except Exception as e:
         flash(f"Error downloading file: {e}", "error")
         return redirect(url_for("view_company"))
+
 if __name__ == "__main__":
     app.run
