@@ -21,6 +21,8 @@
 <!-- ✅ Navbar Placeholder (Loads navbar dynamically) -->
 <div id="navbar-placeholder"></div>
 
+
+
 <!-- Welcome Text Section -->
 <div class="text-center my-4">
     <section class="welcome-text">
@@ -207,10 +209,10 @@
 <!-- ✅ JavaScript to Load Navbar -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        fetch("/navbar")  // ✅ Fetch from Flask route
+        fetch("/navbar") // Fetch the navbar.html file via Flask
             .then(response => {
                 if (!response.ok) {
-                    throw new Error("Navbar file not found!");
+                    throw new Error("Navbar not found!");
                 }
                 return response.text();
             })
