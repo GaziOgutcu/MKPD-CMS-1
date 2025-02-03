@@ -15,24 +15,24 @@
             <img src="{{ url_for('static', filename='logo1.jpg') }}" alt="Company Logo" class="img-fluid mb-4" style="max-height: 200px;">
         </a>
     </div>
-    <form class="form" action="/login" method="POST">
-        <div class="form-title"><span>Sign in to your</span></div>
-        <div class="title-2"><span>SPACE</span></div>
-
-        <div class="input-container">
-            <input class="input-mail" type="email" name="email" placeholder="Enter email" required>
-        </div>
-
-        <div class="input-container">
-            <input class="input-pwd" type="password" name="password" placeholder="Enter password" required>
-        </div>
-
-        <button type="submit" class="submit">
-            <span class="sign-text">Sign in</span>
-        </button>
-
-        <p class="signup-link">
-            No account? <a href="/signup" class="up">Sign up!</a>
-        </p>
-    </form>
+        <form class="form" action="/login" method="POST">
+            <div class="form-title"><span>Sign in to your</span></div>
+            <div class="title-2"><span>SPACE</span></div>
+    
+            <div class="input-container">
+                <input class="input-mail" type="email" name="email" placeholder="Enter email" required>
+            </div>
+    
+            <div class="input-container">
+                <input class="input-pwd" type="password" name="password" placeholder="Enter password" required>
+            </div>
+    
+            <button type="submit" class="submit">
+                <span class="sign-text">Sign in</span>
+            </button>
+    
+            <p class="signup-link">
+                No account? <a href="/signup" class="up">Sign up!</a>
+            </p>
+        </form>
 </body>
