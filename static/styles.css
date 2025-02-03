@@ -1,53 +1,3 @@
-/* Background */
-
-.containerbg {
-  width: 100%;
-  height: 100%;
-  --s: 84px;
-  --c1: #f2f2f2;
-  --c2: #cdcbcc;
-  --c3: #999999;
-
-  --_g: 0 120deg, #0000 0;
-  background: conic-gradient(
-      from 0deg at calc(500% / 6) calc(100% / 3),
-      var(--c3) var(--_g)
-    ),
-    conic-gradient(
-      from -120deg at calc(100% / 6) calc(100% / 3),
-      var(--c2) var(--_g)
-    ),
-    conic-gradient(
-      from 120deg at calc(100% / 3) calc(500% / 6),
-      var(--c1) var(--_g)
-    ),
-    conic-gradient(
-      from 120deg at calc(200% / 3) calc(500% / 6),
-      var(--c1) var(--_g)
-    ),
-    conic-gradient(
-      from -180deg at calc(100% / 3) 50%,
-      var(--c2) 60deg,
-      var(--c1) var(--_g)
-    ),
-    conic-gradient(
-      from 60deg at calc(200% / 3) 50%,
-      var(--c1) 60deg,
-      var(--c3) var(--_g)
-    ),
-    conic-gradient(
-      from -60deg at 50% calc(100% / 3),
-      var(--c1) 120deg,
-      var(--c2) 0 240deg,
-      var(--c3) 0
-    );
-  background-size: calc(var(--s) * 1.732) var(--s);
-}
-
-
-
-
-
 /* ===================== */
 /* Navbar Styles */
 /* ===================== */
@@ -159,6 +109,108 @@
 /* ===================== */
 /* Form Styles */
 /* ===================== */
+
+/* Background */
+.containerbg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100vh;
+    background: conic-gradient(
+            from 0deg at calc(500% / 6) calc(100% / 3),
+            var(--c3) var(--_g)
+        ),
+        conic-gradient(
+            from -120deg at calc(100% / 6) calc(100% / 3),
+            var(--c2) var(--_g)
+        ),
+        conic-gradient(
+            from 120deg at calc(100% / 3) calc(500% / 6),
+            var(--c1) var(--_g)
+        );
+    background-size: calc(var(--s) * 1.732) var(--s);
+    padding: 20px;
+}
+
+/* Center the logo */
+.logo-container {
+    margin-bottom: 30px;
+}
+
+.logo {
+    max-width: 300px;
+    height: auto;
+    display: block;
+}
+
+/* Form Container */
+.form-container {
+    background: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Add shadow for better visibility */
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+/* Form Title */
+.form-title {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.title-2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Inputs */
+.input-container input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Submit Button */
+.submit {
+    width: 100%;
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.submit:hover {
+    background-color: #555;
+}
+
+/* Signup Link */
+.signup-link {
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.signup-link a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}
+
 
 body {
     display: flex;
