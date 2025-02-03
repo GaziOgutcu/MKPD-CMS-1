@@ -125,11 +125,30 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+    gap: 20px; /* Adds even spacing between logo and form */
+    margin: 0;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
 }
 
 .form-container {
     width: 100%;
     max-width: 400px;
+    padding: 20px; /* Adds some spacing within the form container */
+    text-align: center; /* Centers text inside the form */
+}
+
+.form {
+    margin: 0 auto; /* Centers the form horizontally */
+}
+
+.welcome-text, .form-title, .title-2 {
+    margin: 0; /* Removes default margins for consistent spacing */
+    padding: 0;
 }
 
 
