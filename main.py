@@ -8,11 +8,11 @@ import requests
 
 # Initialize Flask app
 app = Flask(__name__, template_folder='Templates')
-app.secret_key = "super_secret_key"
+# app.secret_key = "super_secret_key"
 
-print(f"Secret Key: {app.secret_key}")
+# print(f"Secret Key: {app.secret_key}")
 
-print(app.jinja_loader.searchpath)
+# print(app.jinja_loader.searchpath)
 
 # Constants
 EXCEL_FILE = os.path.join(os.getcwd(), "CompanyData.xlsx")
