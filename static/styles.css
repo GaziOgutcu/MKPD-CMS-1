@@ -31,21 +31,6 @@
     background-color: #00509e;
 }
 
-/* Ensure the collapse functionality works with the "show" class */
-.collapse {
-    display: none;
-    transition: all 0.4s ease-in-out;
-}
-
-.collapse.show {
-    display: flex; /* Change this to 'block' if the menu is vertical */
-    flex-direction: column; /* Ensure vertical alignment for links */
-}
-
-/* Optional: Style the custom toggle */
-.nav_bar {
-    cursor: pointer; /* Add a pointer cursor */
-}
 
 
 /* ===================== */
