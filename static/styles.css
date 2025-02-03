@@ -3,13 +3,13 @@
 /* ===================== */
 
 .navbar {
-    background-color: #072440 !important; /* Dark Blue */
+    background-color: #072440; /* Dark Blue */
     padding: 10px 20px;
     opacity: 1;
 }
 
 .navbar a {
-    color: rgb(232, 8, 8); /* Changed from red to white for better contrast */
+    color: rgb(232, 8, 8); /* Red */
     font-size: 20px;
     font-weight: bold;
     text-decoration: none;
@@ -47,12 +47,10 @@
 .logo-mkpd {
     font-size: 1.2rem;
     font-weight: bold;
-    line-height: 1;
 }
 
 .logo-cms {
     font-size: 1rem;
-    line-height: 1;
 }
 
 .main-logo {
@@ -99,18 +97,17 @@
 /* ===================== */
 
 .navbar-toggler {
-    border-color: rgb(178, 25, 25) !important;
+    border-color: rgb(178, 25, 25);
 }
 
 .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='white' stroke-width='3' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E") !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='white' stroke-width='3' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
 }
 
 /* ===================== */
-/* Form Styles */
+/* Background Styles */
 /* ===================== */
 
-/* Background */
 .containerbg {
     display: flex;
     flex-direction: column;
@@ -134,7 +131,6 @@
     padding: 20px;
 }
 
-/* Center the logo */
 .logo-container {
     margin-bottom: 30px;
 }
@@ -145,22 +141,25 @@
     display: block;
 }
 
-/* Form Container */
+/* ===================== */
+/* Form Styles */
+/* ===================== */
+
 .form-container {
-    background: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
+    background: rgba(255, 255, 255, 0.9);
     padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Add shadow for better visibility */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     width: 100%;
     max-width: 400px;
     text-align: center;
 }
 
-/* Form Title */
 .form-title {
     margin: 0;
     font-size: 1.5rem;
     color: #333;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .title-2 {
@@ -171,12 +170,22 @@
 }
 
 /* Inputs */
+.input-container {
+    position: relative;
+}
+
 .input-container input {
     width: 100%;
     padding: 10px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.input-container input:focus::placeholder {
+    opacity: 0;
+    transition: opacity 0.9s;
 }
 
 /* Submit Button */
@@ -211,183 +220,9 @@
     text-decoration: underline;
 }
 
-
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    background-color: #f8f9fa; /* Light background to match your design */
-}
-
-.container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    gap: 20px; /* Adds even spacing between logo and form */
-    margin: 0;
-}
-
-img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-}
-
-.form-container {
-    width: 100%;
-    max-width: 400px;
-    padding: 20px; /* Adds some spacing within the form container */
-    text-align: center; /* Centers text inside the form */
-}
-
-.form {
-    margin: 0 auto; /* Centers the form horizontally */
-}
-
-.welcome-text, .form-title, .title-2 {
-    margin: 0; /* Removes default margins for consistent spacing */
-    padding: 0;
-}
-
-
-.form {
-    position: relative;
-    display: block;
-    padding: 2.2rem;
-    max-width: 350px;
-    background: linear-gradient(14deg, rgba(2,0,36, 0.8) 0%, rgba(24, 24, 65, 0.7) 66%, 
-            rgb(20, 76, 99) 100%), radial-gradient(circle, rgba(2,0,36, 0.5) 0%, 
-            rgba(32, 15, 53, 0.2) 65%, rgba(14, 29, 28, 0.9) 100%);
-    border: 2px solid #fff;
-    box-shadow: rgba(0,212,255) 0px 0px 50px -15px;
-    overflow: hidden;
-    z-index: 1;
-    text-align: center;
-}
-
-
-.form {
-    position: relative;
-    display: block;
-    padding: 2.2rem;
-    max-width: 350px;
-    background: linear-gradient(14deg, rgba(2,0,36, 0.8) 0%, rgba(24, 24, 65, 0.7) 66%, 
-            rgb(20, 76, 99) 100%), radial-gradient(circle, rgba(2,0,36, 0.5) 0%, 
-            rgba(32, 15, 53, 0.2) 65%, rgba(14, 29, 28, 0.9) 100%);
-    border: 2px solid #fff;
-    -webkit-box-shadow: rgba(0,212,255) 0px 0px 50px -15px;
-    box-shadow: rgba(0,212,255) 0px 0px 50px -15px;
-    overflow: hidden;
-    z-index: +1;
-}
-
-.input-container {
-    position: relative;
-}
-
-.input-container input, .form button {
-    outline: none;
-    border: 2px solid #ffffff;
-    margin: 8px 0;
-    font-family: monospace;
-}
-
-.input-container input {
-    background-color: #fff;
-    padding: 6px;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    width: 250px;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-.input-mail:focus::placeholder, .input-pwd:focus::placeholder {
-    opacity: 0;
-    transition: opacity .9s;
-}
-
-.submit {
-    position: relative;
-    display: block;
-    padding: 8px;
-    background-color: #c0c0c0;
-    color: #ffffff;
-    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    font-weight: 500;
-    width: 100%;
-    text-transform: uppercase;
-    overflow: hidden;
-    cursor: pointer;
-}
-
-.submit:hover {
-    border-radius: 3.9px;
-    box-shadow: 4px 5px 17px -4px #ffffff;
-}
-
-.signup-link {
-    color: #c0c0c0;
-    font-size: 0.875rem;
-    text-align: center;
-    font-family: monospace;
-}
-
-.signup-link a {
-    color: #fff;
-    text-decoration: none;
-}
-
-.up:hover {
-    text-decoration: underline;
-}
-
 /* ===================== */
-/* Form Header Styles */
+/* Animation Styles */
 /* ===================== */
-
-.form-title {
-    font-size: 1.25rem;
-    font-family: monospace;
-    font-weight: 600;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
-    animation-duration: 1.5s;
-    transition: .12s;
-}
-
-.form-title span {
-    animation: flickering 2s linear infinite both;
-}
-
-.title-2 {
-    display: block;
-    font-size: 2.1rem;
-    font-weight: 800;
-    text-align: center;
-    -webkit-text-stroke: #fff 0.1rem;
-    letter-spacing: 0.2rem;
-    color: transparent;
-    text-shadow: 0px 0px 16px #CECECE;
-}
-
-/* ===================== */
-/* Shooting Stars Styles */
-/* ===================== */
-
-.bg-stars {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    animation: animateBg 50s linear infinite;
-}
 
 @keyframes animateBg {
     0%, 100% {
@@ -396,15 +231,6 @@ img {
     50% {
         transform: scale(1.2);
     }
-}
-
-.star {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background: #fff;
-    border-radius: 50%;
-    animation: animate 3s linear infinite;
 }
 
 @keyframes animate {
@@ -416,6 +242,15 @@ img {
         transform: rotate(315deg) translateX(-1000px);
         opacity: 0;
     }
+}
+
+.star {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #fff;
+    border-radius: 50%;
+    animation: animate 3s linear infinite;
 }
 
 .star:nth-child(1) {
