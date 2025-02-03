@@ -7,11 +7,13 @@
             <span class="logo-cms">CMS</span>
         </a>
 
-        <!-- Toggle Button for Mobile View -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <!-- Custom Toggle Button -->
+        <div class="nav_bar" id="customToggle">
+            <div class="bar1"></div>
+            <div class="bar2"></div>
+            <div class="bar3_h"></div>
+            <div class="bar4"></div>
+        </div>
 
         <!-- Navbar Links -->
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -68,3 +70,11 @@
     </div>
 </nav>
 
+
+<script>
+    // Custom Toggle Button Functionality
+    document.getElementById("customToggle").addEventListener("click", function () {
+        const navbarNav = document.getElementById("navbarNav"); // Target the navbar links container
+        navbarNav.classList.toggle("show"); // Toggle the "show" class to open/close the menu
+    });
+</script>
