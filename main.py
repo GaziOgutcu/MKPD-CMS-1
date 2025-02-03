@@ -8,7 +8,7 @@ import requests
 
 # Initialize Flask app
 app = Flask(__name__, template_folder='Templates')
-# app.secret_key = "super_secret_key"
+app.secret_key = "super_secret_key"
 
 # print(f"Secret Key: {app.secret_key}")
 
