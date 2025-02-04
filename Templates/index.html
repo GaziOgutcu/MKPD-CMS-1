@@ -76,41 +76,66 @@
         </div>
 
 
-<!-- Framed Vehicles Section -->
-<div class="col-md-6">
-    <div class="card border-danger shadow">
-        <!-- Card Header -->
-        <div class="card-header bg-danger text-white text-center">
-            <h3 class="mb-0">Vehicles with Soon-to-Expire Rego</h3>
-        </div>
+            <!-- Vehicles with Soon-to-Expire Rego -->
+            <div class="col-md-6">
+                <div class="card shadow-lg border-danger">
+                    <div class="card-header bg-gradient text-white text-center" style="background: linear-gradient(45deg, #dc3545, #ff6b6b);">
+                        <h3 class="mb-0">🚗 Vehicles with Soon-to-Expire Rego</h3>
+                    </div>
+                    <div class="card-body vehicle-container">
+                        {% if vehicles and vehicles|length > 0 %}
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Plate</th>
+                                        <th>Type</th>
+                                        <th>Expiry (Days)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for vehicle in vehicles %}
+                                    <tr>
+                                        <td><strong>{{ vehicle['Plate'] }}</strong></td>
+                                        <td>{{ vehicle['Type'] }}</td>
+                                        <td class="text-danger"><strong>{{ vehicle['Expiry'] }} Days</strong></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
+                        {% endif %}
+                    </div>
 
-        <!-- Card Body: Table Section -->
-        <div class="card-body" style="max-height: 500px; overflow-y: auto;">
-            {% if vehicles and vehicles|length > 0 %}
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Plate</th>
-                                <th>Type</th>
-                                <th>Expiry (Days)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for vehicle in vehicles %}
-                            <tr>
-                                <td>{{ vehicle['Plate'] }}</td>
-                                <td>{{ vehicle['Type'] }}</td>
-                                <td class="text-danger">{{ vehicle['Expiry'] }} Days</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <!-- Company Information with Floating Copy Buttons -->
+                    <div class="card-body">
+                        <div class="copy-container">
+                            <div class="copy-item">
+                                <span><strong>📄 Harm Drive CRN:</strong> <span id="crn">142123141</span></span>
+                                <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('142123141', 'Harm Drive CRN')">📋 Copy</button>
+                            </div>
+                            <div class="copy-item">
+                                <span><strong>🏢 Company Name:</strong> <span id="company">Harm Drive Pty Ltd</span></span>
+                                <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('Harm Drive Pty Ltd', 'Company Name')">📋 Copy</button>
+                            </div>
+                            <div class="copy-item">
+                                <span><strong>📜 Harm Drive ABN:</strong> <span id="abn">676847242</span></span>
+                                <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('676847242', 'Harm Drive ABN')">📋 Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Renew Registration Button -->
+                    <div class="card-footer text-center">
+                        <a href="https://www.service.transport.qld.gov.au/tmrauthentication/public/Login.xhtml?serviceName=RenewRegistrationMulti&qgovLoginSelected=N&entryPage=/application/Entry.xhtml&exitPage=/public/Farewell.xhtml&executionContext=qt&preferredIaal2Option=&dswid=-9947"
+                        target="_blank"
+                        class="btn btn-success btn-lg px-4">
+                            🔄 Renew Registration
+                        </a>
+                    </div>
                 </div>
-            {% else %}
-                <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
-            {% endif %}
-        </div>
+            </div>
+
 
                 <!-- Company Information with Copy Buttons -->
         <div class="card-body">

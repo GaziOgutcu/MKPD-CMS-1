@@ -31,6 +31,71 @@
     background-color: #00509e;
 }
 
+/* 🔹 News Section Styling */
+.news-container {
+    max-height: 500px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.news-item {
+    padding: 12px;
+    transition: all 0.3s ease-in-out;
+    border-bottom: 1px solid #ddd;
+}
+
+.news-item:hover {
+    background: #eef5ff;
+    transform: scale(1.02);
+}
+
+.news-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.news-link:hover {
+    text-decoration: underline;
+}
+
+/* 🚗 Vehicles Section Styling */
+.vehicle-container {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* 📋 Copy Button Floating */
+.copy-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.copy-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+.copy-btn {
+    font-size: 14px;
+}
+
+/* 🔄 Renew Button */
+.btn-lg {
+    font-size: 18px;
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
+}
+
+.btn-lg:hover {
+    transform: scale(1.05);
+}
 
 
 /* ===================== */
