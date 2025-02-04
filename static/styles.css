@@ -86,6 +86,54 @@
     font-size: 14px;
 }
 
+/* 🚀 Company Information Section */
+.company-info {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 📋 Copy Buttons */
+.copy-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.copy-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease-in-out;
+}
+
+.copy-item:hover {
+    background: #eef5ff;
+    transform: scale(1.02);
+}
+
+.copy-btn {
+    font-size: 14px;
+    transition: all 0.3s ease-in-out;
+}
+
+.copy-btn:hover {
+    background-color: #007bff;
+    color: white;
+    transform: scale(1.1);
+}
+
+/* 🔄 Renew Button Hover */
+.btn-lg:hover {
+    transform: scale(1.05);
+}
+
+
 /* 🔄 Renew Button */
 .btn-lg {
     font-size: 18px;
