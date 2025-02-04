@@ -29,54 +29,55 @@
 </div>
 
 
-        <div class="container mt-5">
-            <div class="row g-4"> <!-- "g-4" adds spacing between cards -->
-                <!-- Framed News Section -->
-                <div class="col-md-6"> <!-- Take Half of the Width -->
-                    <div class="card shadow-lg border-primary">
-                        <div class="card-header bg-gradient text-white text-center" style="background: linear-gradient(45deg, #007bff, #00d9ff);">
-                            <h3 class="mb-0">📰 Latest Construction News</h3>
-                        </div>
-                        <div class="card-body news-container">
-                            {% if news_items %}
-                                <ul class="list-group">
-                                    {% for news in news_items %}
-                                    <li class="list-group-item news-item">
-                                        <a href="{{ news['url'] }}" target="_blank" class="news-link">
-                                            <strong>{{ news['title'] }}</strong>
-                                        </a>
-                                        <p class="small text-muted">📅 {{ news['publishedAt'] }}</p>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                                <nav aria-label="News pagination">
-                                    <ul class="pagination justify-content-center mt-3">
-                                        {% if page > 1 %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page={{ page - 1 }}">⬅ Prev</a>
-                                        </li>
-                                        {% endif %}
-                                        {% for p in range(1, total_pages + 1) %}
-                                        <li class="page-item {% if page == p %}active{% endif %}">
-                                            <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+            <div class="container mt-5">
+                <div class="row g-4"> <!-- "g-4" adds spacing between cards -->
+                    <!-- Framed News Section -->
+                    <div class="col-md-6"> <!-- Take Half of the Width -->
+                        <div class="card shadow-lg border-primary">
+                            <div class="card-header bg-gradient text-white text-center" style="background: linear-gradient(45deg, #007bff, #00d9ff);">
+                                <h3 class="mb-0">📰 Latest Construction News</h3>
+                            </div>
+                            <div class="card-body news-container">
+                                {% if news_items %}
+                                    <ul class="list-group">
+                                        {% for news in news_items %}
+                                        <li class="list-group-item news-item">
+                                            <a href="{{ news['url'] }}" target="_blank" class="news-link">
+                                                <strong>{{ news['title'] }}</strong>
+                                            </a>
+                                            <p class="small text-muted">📅 {{ news['publishedAt'] }}</p>
                                         </li>
                                         {% endfor %}
-                                        {% if page < total_pages %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page={{ page + 1 }}">Next ➡</a>
-                                        </li>
-                                        {% endif %}
                                     </ul>
-                                </nav>
-                            {% else %}
-                                <p class="text-center text-muted">No recent news available.</p>
-                            {% endif %}
+                                    <nav aria-label="News pagination">
+                                        <ul class="pagination justify-content-center mt-3">
+                                            {% if page > 1 %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ page - 1 }}">⬅ Prev</a>
+                                            </li>
+                                            {% endif %}
+                                            {% for p in range(1, total_pages + 1) %}
+                                            <li class="page-item {% if page == p %}active{% endif %}">
+                                                <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                                            </li>
+                                            {% endfor %}
+                                            {% if page < total_pages %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ page + 1 }}">Next ➡</a>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    </nav>
+                                {% else %}
+                                    <p class="text-center text-muted">No recent news available.</p>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Vehicles with Soon-to-Expire Rego -->
-                <div class="col-md-6"> <!-- Take Half of the Width -->
+
+            <!-- Vehicles with Soon-to-Expire Rego -->
+                <div class="col-md-6">
                     <div class="card shadow-lg border-danger">
                         <div class="card-header bg-gradient text-white text-center" style="background: linear-gradient(45deg, #dc3545, #ff6b6b);">
                             <h3 class="mb-0">🚗 Vehicles with Soon-to-Expire Rego</h3>
@@ -106,6 +107,28 @@
                             {% endif %}
                         </div>
 
+                        <!-- 🚀 Integrated Company Information & Copy Buttons -->
+                        <div class="card-body">
+                            <div class="company-info">
+                                <h5 class="text-center text-primary mb-3">🏢 Company Information</h5>
+                                <div class="copy-container">
+                                    <div class="copy-item">
+                                        <span><strong>📄 Harm Drive CRN:</strong> <span id="crn">142123141</span></span>
+                                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('142123141', 'Harm Drive CRN')">📋 Copy</button>
+                                    </div>
+                                    <div class="copy-item">
+                                        <span><strong>🏢 Company Name:</strong> <span id="company">Harm Drive Pty Ltd</span></span>
+                                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('Harm Drive Pty Ltd', 'Company Name')">📋 Copy</button>
+                                    </div>
+                                    <div class="copy-item">
+                                        <span><strong>📜 Harm Drive ABN:</strong> <span id="abn">676847242</span></span>
+                                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('676847242', 'Harm Drive ABN')">📋 Copy</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 🔄 Renew Registration Button -->
                         <div class="card-footer text-center">
                             <a href="https://www.service.transport.qld.gov.au/tmrauthentication/public/Login.xhtml?serviceName=RenewRegistrationMulti&qgovLoginSelected=N&entryPage=/application/Entry.xhtml&exitPage=/public/Farewell.xhtml&executionContext=qt&preferredIaal2Option=&dswid=-9947"
                             target="_blank"
@@ -115,9 +138,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
 
 <script>
     // Copy to Clipboard Function
