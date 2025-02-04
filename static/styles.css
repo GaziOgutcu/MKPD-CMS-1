@@ -163,6 +163,25 @@
 /* Log in page Styling */
 /* ===================== */
 
+/* Input Customised */
+
+.input {
+    border: 2px solid #e8e8e8;
+    padding: 15px;
+    border-radius: 10px;
+    background-color: #212121;
+    font-size: small;
+    font-weight: bold;
+    text-align: center;
+   }
+   
+   .input:focus {
+    outline-color: white;
+    background-color: #212121;
+    color: #e8e8e8;
+    box-shadow: 5px 5px #888888;
+   }
+
 /* Full-page container */
 .login-page {
     background: linear-gradient(135deg, #003366, #00509e);
