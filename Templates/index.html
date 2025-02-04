@@ -29,91 +29,153 @@
 </div>
 
 
-        <div class="container mt-5">
-            <div class="row g-4 justify-content-center">
-                <!-- 📰 News Section -->
-                <div class="col-md-4">
-                    <div class="flip-card">
-                        <div class="flip-card-inner">
-                            <!-- Front Side -->
-                            <div class="flip-card-front bg-primary text-white">
-                                <h3>📰 Latest News</h3>
-                                <p>Stay updated with the latest construction news.</p>
-                            </div>
-                            <!-- Back Side -->
-                            <div class="flip-card-back bg-light">
-                                <ul class="list-group">
-                                    {% for news in news_items %}
-                                    <li class="list-group-item">
-                                        <a href="{{ news['url'] }}" target="_blank" class="news-link">
-                                            <strong>{{ news['title'] }}</strong>
-                                        </a>
-                                        <p class="small text-muted">📅 {{ news['publishedAt'] }}</p>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+<div class="container mt-5">
+    <div class="row">
+        <!-- Framed News Section -->
+        <div class="col-md-6">
+            <div class="card border-primary shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">Latest Construction News</h3>
                 </div>
+                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                    {% if news_items %}
+                        <ul class="list-unstyled">
+                            {% for news in news_items %}
+                            <li class="mb-3 border-bottom pb-2">
+                                <a href="{{ news['url'] }}" target="_blank" class="text-decoration-none text-primary">
+                                    <strong>{{ news['title'] }}</strong>
+                                </a>
+                                <p class="small text-muted mb-0">Published: {{ news['publishedAt'] }}</p>
+                            </li>
+                            {% endfor %}
+                        </ul>
 
-                <!-- 🚗 Vehicles with Soon-to-Expire Rego -->
-                <div class="col-md-4">
-                    <div class="flip-card">
-                        <div class="flip-card-inner">
-                            <div class="flip-card-front bg-danger text-white">
-                                <h3>🚗 Vehicles Expiring Soon</h3>
-                                <p>Check which vehicles need registration renewal.</p>
-                            </div>
-                            <div class="flip-card-back bg-light">
-                                <table class="table table-hover">
-                                    <thead class="table-dark">
-                                        <tr><th>Plate</th><th>Expiry (Days)</th></tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for vehicle in vehicles %}
-                                        <tr>
-                                            <td><strong>{{ vehicle['Plate'] }}</strong></td>
-                                            <td class="text-danger"><strong>{{ vehicle['Expiry'] }} Days</strong></td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                        <!-- Pagination Controls -->
+                        <nav aria-label="News pagination">
+                            <ul class="pagination justify-content-center mt-3">
+                                {% if page > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page - 1 }}">Previous</a>
+                                </li>
+                                {% endif %}
 
-                <!-- 🏢 Company Info -->
-                <div class="col-md-4">
-                    <div class="flip-card">
-                        <div class="flip-card-inner">
-                            <div class="flip-card-front bg-info text-white">
-                                <h3>🏢 Company Info</h3>
-                                <p>Quick access to company details.</p>
-                            </div>
-                            <div class="flip-card-back bg-light">
-                                <div class="copy-container">
-                                    <div class="copy-item">
-                                        <span><strong>📄 CRN:</strong> <span id="crn">142123141</span></span>
-                                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('142123141', 'CRN')">📋 Copy</button>
-                                    </div>
-                                    <div class="copy-item">
-                                        <span><strong>🏢 Name:</strong> <span id="company">Harm Drive Pty Ltd</span></span>
-                                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('Harm Drive Pty Ltd', 'Company Name')">📋 Copy</button>
-                                    </div>
-                                    <div class="copy-item">
-                                        <span><strong>📜 ABN:</strong> <span id="abn">676847242</span></span>
-                                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('676847242', 'ABN')">📋 Copy</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                {% for p in range(1, total_pages + 1) %}
+                                <li class="page-item {% if page == p %}active{% endif %}">
+                                    <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                                </li>
+                                {% endfor %}
+
+                                {% if page < total_pages %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page + 1 }}">Next</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% else %}
+                        <p class="text-center text-muted">No recent news available.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
+<!-- Framed Vehicles Section -->
+<div class="col-md-6">
+    <div class="card border-danger shadow">
+        <!-- Card Header -->
+        <div class="card-header bg-danger text-white text-center">
+            <h3 class="mb-0">Vehicles with Soon-to-Expire Rego</h3>
+        </div>
+
+        <!-- Card Body: Table Section -->
+        <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+            {% if vehicles and vehicles|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Plate</th>
+                                <th>Type</th>
+                                <th>Expiry (Days)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vehicle in vehicles %}
+                            <tr>
+                                <td>{{ vehicle['Plate'] }}</td>
+                                <td>{{ vehicle['Type'] }}</td>
+                                <td class="text-danger">{{ vehicle['Expiry'] }} Days</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
+            {% endif %}
+        </div>
+
+                <!-- Company Information with Copy Buttons -->
+        <div class="card-body">
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+                <span><strong>Harm Drive CRN:</strong> <span id="crn">142123141</span></span>
+                <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('142123141', 'Harm Drive CRN')">Copy</button>
+            </div>
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+                <span><strong>Company Name:</strong> <span id="company">Harm Drive Pty Ltd</span></span>
+                <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('Harm Drive Pty Ltd', 'Company Name')">Copy</button>
+            </div>
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+                <span><strong>Harm Drive ABN:</strong> <span id="abn">676847242</span></span>
+                <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('676847242', 'Harm Drive ACN')">Copy</button>
+            </div>
+        </div>
+
+
+        <!-- Renew Registration Button -->
+        <div class="card-footer text-center">
+            <a href="https://www.service.transport.qld.gov.au/tmrauthentication/public/Login.xhtml?serviceName=RenewRegistrationMulti&qgovLoginSelected=N&entryPage=/application/Entry.xhtml&exitPage=/public/Farewell.xhtml&executionContext=qt&preferredIaal2Option=&dswid=-9947"
+               target="_blank"
+               class="btn btn-success btn-lg">
+                Renew Registration
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Copy to Clipboard Function
+    function copyToClipboard(text, label) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    showToast(`${label} copied to clipboard!`);
+                })
+                .catch(err => {
+                    console.error('Clipboard write failed: ', err);
+                    alert('Failed to copy. Please try again.');
+                });
+        } else {
+            // Fallback for older browsers
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed'; // Prevent scrolling
+            textarea.style.opacity = '0'; // Invisible to user
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+
+            try {
+                document.execCommand('copy');
+                showToast(`${label} copied to clipboard!`);
+            } catch (err) {
+                console.error('Fallback copy failed: ', err);
+                alert('Failed to copy. Please try again.');
+            }
+
+            document.body.removeChild(textarea);
+        }
+    }
 
     // Toast Notification Function
     function showToast(message) {
@@ -143,43 +205,6 @@
 
 <!-- ✅ JavaScript to Load Navbar -->
 <script>
-
-        function showToast(message, type = 'success') {
-            // Create toast element
-            const toast = document.createElement('div');
-            toast.classList.add('custom-toast', `toast-${type}`);
-            toast.innerHTML = `
-                <span class="toast-icon">${getToastIcon(type)}</span>
-                <span class="toast-message">${message}</span>
-                <span class="toast-close" onclick="this.parentElement.remove()">✖</span>
-            `;
-
-            // Append to body
-            document.body.appendChild(toast);
-
-            // Animate in
-            setTimeout(() => {
-                toast.classList.add('show');
-            }, 100);
-
-            // Remove after 3 seconds
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        // Function to return an appropriate icon
-        function getToastIcon(type) {
-            switch (type) {
-                case 'success': return '✅';
-                case 'error': return '❌';
-                case 'warning': return '⚠️';
-                case 'info': return 'ℹ️';
-                default: return '🔔';
-            }
-        }
-
     document.addEventListener("DOMContentLoaded", function () {
         fetch("/navbar") // Fetch the navbar.html file via Flask
             .then(response => {
