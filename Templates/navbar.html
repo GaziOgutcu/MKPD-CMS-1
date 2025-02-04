@@ -1,5 +1,4 @@
-<!-- navbar.html -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <!-- Brand Logo -->
         <a class="navbar-brand logo" href="/">
@@ -22,7 +21,7 @@
                         data-bs-toggle="dropdown" aria-expanded="false">
                         Companies
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="companiesDropdown">
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="companiesDropdown">
                         <li><a class="dropdown-item" href="/add_company">Add Company</a></li>
                         <li><a class="dropdown-item" href="/view_company">View Companies</a></li>
                     </ul>
@@ -39,7 +38,7 @@
                         data-bs-toggle="dropdown" aria-expanded="false">
                         Employees
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="employeesDropdown">
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="employeesDropdown">
                         <li><a class="dropdown-item" href="/add_employee">Add Employee</a></li>
                         <li><a class="dropdown-item" href="/search_employee">Search Employee</a></li>
                     </ul>
@@ -51,7 +50,7 @@
                         data-bs-toggle="dropdown" aria-expanded="false">
                         Projects
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="projectsDropdown">
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="projectsDropdown">
                         <li><a class="dropdown-item" href="/add_project">Add a Project</a></li>
                         <li><a class="dropdown-item" href="/view_projects">View Projects</a></li>
                     </ul>
@@ -61,10 +60,9 @@
             <!-- Right-Aligned Logout Link -->
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/logout">Logout</a>
+                    <a class="nav-link text-warning" href="/logout">Logout</a>
                 </li>
             </ul>
         </div>
     </div>
 </nav>
-

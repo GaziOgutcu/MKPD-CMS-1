@@ -9,29 +9,40 @@
 }
 
 .navbar a {
-    color: rgb(232, 8, 8); /* Changed from red to white for better contrast */
-    font-size: 20px;
+    color: #ffffff; /* White for better contrast */
+    font-size: 18px;
     font-weight: bold;
     text-decoration: none;
+    transition: color 0.3s ease-in-out;
 }
 
 .navbar a:hover, .dropdown-item:hover {
-    color: yellow;
+    color: #ffc107; /* Yellow highlight on hover */
 }
 
 .dropdown-menu {
-    background-color: #003366;
+    background-color: #003366; /* Dark blue dropdown background */
+    border: none; /* Remove default border */
 }
 
 .dropdown-item {
-    color: rgb(92, 88, 206);
+    color: #ffffff;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
 }
 
 .dropdown-item:hover {
-    background-color: #00509e;
+    background-color: #00509e; /* Light blue hover effect */
+    color: #ffffff;
 }
 
-/* Flip Card Container */
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='white' stroke-width='3' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+/* ===================== */
+/* Flip Card Styling */
+/* ===================== */
+
 .flip-card {
     background-color: transparent;
     width: 100%;
@@ -44,7 +55,7 @@
     width: 100%;
     height: 100%;
     text-align: center;
-    transition: transform 0.6s;
+    transition: transform 0.6s ease-in-out;
     transform-style: preserve-3d;
 }
 
@@ -52,7 +63,6 @@
     transform: rotateY(180deg);
 }
 
-/* Front & Back Styling */
 .flip-card-front, .flip-card-back {
     position: absolute;
     width: 100%;
@@ -63,18 +73,17 @@
     align-items: center;
     border-radius: 10px;
     padding: 20px;
-}
-
-.flip-card-front {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .flip-card-back {
     transform: rotateY(180deg);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* 🔥 Toast Container */
+/* ===================== */
+/* Toast Notifications */
+/* ===================== */
+
 .custom-toast {
     position: fixed;
     bottom: 20px;
@@ -87,56 +96,32 @@
     font-size: 16px;
     font-weight: bold;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    transition: transform 0.4s ease, opacity 0.4s ease;
-    transform: translateX(100%);
     opacity: 0;
+    transform: translateX(100%);
     z-index: 9999;
+    transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
-/* 🟢 Success Toast */
-.toast-success {
-    background-color: #28a745;
-    color: white;
-}
+/* Toast Variants */
+.toast-success { background-color: #28a745; color: white; }
+.toast-error { background-color: #dc3545; color: white; }
+.toast-warning { background-color: #ffc107; color: black; }
+.toast-info { background-color: #17a2b8; color: white; }
 
-/* 🔴 Error Toast */
-.toast-error {
-    background-color: #dc3545;
-    color: white;
-}
-
-/* 🟡 Warning Toast */
-.toast-warning {
-    background-color: #ffc107;
-    color: black;
-}
-
-/* 🔵 Info Toast */
-.toast-info {
-    background-color: #17a2b8;
-    color: white;
-}
-
-/* 🎯 Show Animation */
 .custom-toast.show {
     transform: translateX(0);
     opacity: 1;
 }
 
-/* ❌ Close Button */
 .toast-close {
     cursor: pointer;
-    margin-left: auto;
     font-size: 18px;
 }
 
-/* 🛎 Icon */
-.toast-icon {
-    font-size: 20px;
-}
+/* ===================== */
+/* News Section Styling */
+/* ===================== */
 
-
-/* 🔹 News Section Styling */
 .news-container {
     max-height: 500px;
     overflow-y: auto;
@@ -146,8 +131,8 @@
 
 .news-item {
     padding: 12px;
-    transition: all 0.3s ease-in-out;
     border-bottom: 1px solid #ddd;
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
 .news-item:hover {
@@ -165,48 +150,19 @@
     text-decoration: underline;
 }
 
-/* 🚗 Vehicles Section Styling */
+/* ===================== */
+/* Vehicles Section Styling */
+/* ===================== */
+
 .vehicle-container {
     max-height: 500px;
     overflow-y: auto;
 }
 
-/* 📋 Copy Button Floating */
-.copy-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+/* ===================== */
+/* Copy Button Styling */
+/* ===================== */
 
-.copy-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f8f9fa;
-    padding: 8px;
-    border-radius: 5px;
-}
-
-.copy-btn {
-    font-size: 14px;
-}
-
-.company-logo {
-    width: 400px;
-    height: 400px;
-    object-fit: contain; /* Ensures the image maintains its aspect ratio */
-}
-
-
-/* 🚀 Company Information Section */
-.company-info {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* 📋 Copy Buttons */
 .copy-container {
     display: flex;
     flex-direction: column;
@@ -221,7 +177,7 @@
     padding: 8px;
     border-radius: 5px;
     border: 1px solid #ddd;
-    transition: all 0.3s ease-in-out;
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
 .copy-item:hover {
@@ -240,26 +196,22 @@
     transform: scale(1.1);
 }
 
-/* 🔄 Renew Button Hover */
-.btn-lg:hover {
-    transform: scale(1.05);
-}
+/* ===================== */
+/* Buttons Styling */
+/* ===================== */
 
-
-/* 🔄 Renew Button */
 .btn-lg {
     font-size: 18px;
     font-weight: bold;
-    transition: all 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out;
 }
 
 .btn-lg:hover {
     transform: scale(1.05);
 }
 
-
 /* ===================== */
-/* Logo and Header Styles */
+/* Logo and Header Styling */
 /* ===================== */
 
 .logo {
@@ -274,12 +226,10 @@
 .logo-mkpd {
     font-size: 1.2rem;
     font-weight: bold;
-    line-height: 1;
 }
 
 .logo-cms {
     font-size: 1rem;
-    line-height: 1;
 }
 
 .main-logo {
@@ -287,7 +237,7 @@
 }
 
 /* ===================== */
-/* Welcome Text Styles */
+/* Welcome Section Styling */
 /* ===================== */
 
 .welcome-text {
@@ -307,7 +257,7 @@
 }
 
 /* ===================== */
-/* Copyright Styles (Centered) */
+/* Copyright Styling */
 /* ===================== */
 
 .copyright {
@@ -319,91 +269,31 @@
     font-size: 14px;
     color: #ffffff;
     background-color: #184d82;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
+    border-radius: 5px 5px 0 0;
     text-align: center;
-    width: 100%;
-    max-width: 300px;
 }
 
-
 /* ===================== */
-/* Navbar Toggler Styles */
+/* Navbar Toggler */
 /* ===================== */
 
 .navbar-toggler {
-    border-color: rgb(178, 25, 25) !important;
-}
-
-.navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='white' stroke-width='3' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E") !important;
+    border-color: #b21919 !important;
 }
 
 /* ===================== */
-/* Form Styles */
+/* General Form Styling */
 /* ===================== */
 
-/* Background */
-.containerbg {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100vh;
-    background: conic-gradient(
-            from 0deg at calc(500% / 6) calc(100% / 3),
-            var(--c3) var(--_g)
-        ),
-        conic-gradient(
-            from -120deg at calc(100% / 6) calc(100% / 3),
-            var(--c2) var(--_g)
-        ),
-        conic-gradient(
-            from 120deg at calc(100% / 3) calc(500% / 6),
-            var(--c1) var(--_g)
-        );
-    background-size: calc(var(--s) * 1.732) var(--s);
-    padding: 20px;
-}
-
-/* Center the logo */
-.logo-container {
-    margin-bottom: 30px;
-}
-
-.logo {
-    max-width: 300px;
-    height: auto;
-    display: block;
-}
-
-/* Form Container */
 .form-container {
-    background: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
+    background: rgba(255, 255, 255, 0.9);
     padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Add shadow for better visibility */
-    width: 100%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     max-width: 400px;
     text-align: center;
 }
 
-/* Form Title */
-.form-title {
-    margin: 0;
-    font-size: 1.5rem;
-    color: #333;
-}
-
-.title-2 {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #666;
-    margin-bottom: 20px;
-}
-
-/* Inputs */
 .input-container input {
     width: 100%;
     padding: 10px;
@@ -412,9 +302,7 @@
     border-radius: 5px;
 }
 
-/* Submit Button */
 .submit {
-    width: 100%;
     padding: 10px;
     background-color: #333;
     color: #fff;
@@ -423,16 +311,11 @@
     cursor: pointer;
     font-weight: bold;
     text-transform: uppercase;
+    transition: background-color 0.3s ease-in-out;
 }
 
 .submit:hover {
     background-color: #555;
-}
-
-/* Signup Link */
-.signup-link {
-    margin-top: 10px;
-    font-size: 0.9rem;
 }
 
 .signup-link a {
@@ -442,225 +325,4 @@
 
 .signup-link a:hover {
     text-decoration: underline;
-}
-
-
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    background-color: #f8f9fa; /* Light background to match your design */
-}
-
-.container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    gap: 20px; /* Adds even spacing between logo and form */
-    margin: 0;
-}
-
-img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-}
-
-.form-container {
-    width: 100%;
-    max-width: 400px;
-    padding: 20px; /* Adds some spacing within the form container */
-    text-align: center; /* Centers text inside the form */
-}
-
-.form {
-    margin: 0 auto; /* Centers the form horizontally */
-}
-
-.welcome-text, .form-title, .title-2 {
-    margin: 0; /* Removes default margins for consistent spacing */
-    padding: 0;
-}
-
-
-.form {
-    position: relative;
-    display: block;
-    padding: 2.2rem;
-    max-width: 350px;
-    background: linear-gradient(14deg, rgba(2,0,36, 0.8) 0%, rgba(24, 24, 65, 0.7) 66%, 
-            rgb(20, 76, 99) 100%), radial-gradient(circle, rgba(2,0,36, 0.5) 0%, 
-            rgba(32, 15, 53, 0.2) 65%, rgba(14, 29, 28, 0.9) 100%);
-    border: 2px solid #fff;
-    box-shadow: rgba(0,212,255) 0px 0px 50px -15px;
-    overflow: hidden;
-    z-index: 1;
-    text-align: center;
-}
-
-
-.form {
-    position: relative;
-    display: block;
-    padding: 2.2rem;
-    max-width: 350px;
-    background: linear-gradient(14deg, rgba(2,0,36, 0.8) 0%, rgba(24, 24, 65, 0.7) 66%, 
-            rgb(20, 76, 99) 100%), radial-gradient(circle, rgba(2,0,36, 0.5) 0%, 
-            rgba(32, 15, 53, 0.2) 65%, rgba(14, 29, 28, 0.9) 100%);
-    border: 2px solid #fff;
-    -webkit-box-shadow: rgba(0,212,255) 0px 0px 50px -15px;
-    box-shadow: rgba(0,212,255) 0px 0px 50px -15px;
-    overflow: hidden;
-    z-index: +1;
-}
-
-.input-container {
-    position: relative;
-}
-
-.input-container input, .form button {
-    outline: none;
-    border: 2px solid #ffffff;
-    margin: 8px 0;
-    font-family: monospace;
-}
-
-.input-container input {
-    background-color: #fff;
-    padding: 6px;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    width: 250px;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-.input-mail:focus::placeholder, .input-pwd:focus::placeholder {
-    opacity: 0;
-    transition: opacity .9s;
-}
-
-.submit {
-    position: relative;
-    display: block;
-    padding: 8px;
-    background-color: #c0c0c0;
-    color: #ffffff;
-    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    font-weight: 500;
-    width: 100%;
-    text-transform: uppercase;
-    overflow: hidden;
-    cursor: pointer;
-}
-
-.submit:hover {
-    border-radius: 3.9px;
-    box-shadow: 4px 5px 17px -4px #ffffff;
-}
-
-.signup-link {
-    color: #c0c0c0;
-    font-size: 0.875rem;
-    text-align: center;
-    font-family: monospace;
-}
-
-.signup-link a {
-    color: #fff;
-    text-decoration: none;
-}
-
-.up:hover {
-    text-decoration: underline;
-}
-
-/* ===================== */
-/* Form Header Styles */
-/* ===================== */
-
-.form-title {
-    font-size: 1.25rem;
-    font-family: monospace;
-    font-weight: 600;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
-    animation-duration: 1.5s;
-    transition: .12s;
-}
-
-.form-title span {
-    animation: flickering 2s linear infinite both;
-}
-
-.title-2 {
-    display: block;
-    font-size: 2.1rem;
-    font-weight: 800;
-    text-align: center;
-    -webkit-text-stroke: #fff 0.1rem;
-    letter-spacing: 0.2rem;
-    color: transparent;
-    text-shadow: 0px 0px 16px #CECECE;
-}
-
-/* ===================== */
-/* Shooting Stars Styles */
-/* ===================== */
-
-.bg-stars {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    animation: animateBg 50s linear infinite;
-}
-
-@keyframes animateBg {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.2);
-    }
-}
-
-.star {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background: #fff;
-    border-radius: 50%;
-    animation: animate 3s linear infinite;
-}
-
-@keyframes animate {
-    0% {
-        transform: rotate(315deg) translateX(0);
-        opacity: 1;
-    }
-    100% {
-        transform: rotate(315deg) translateX(-1000px);
-        opacity: 0;
-    }
-}
-
-.star:nth-child(1) {
-    top: 0;
-    right: 0;
-    animation-delay: 0s;
-    animation-duration: 1s;
-}
-
-.star:nth-child(2) {
-    top: 0;
-    right: 100px;
-    animation-delay: 0.2s;
-    animation-duration: 3s;
 }
