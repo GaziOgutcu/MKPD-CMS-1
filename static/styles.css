@@ -191,6 +191,13 @@
     font-size: 14px;
 }
 
+.company-logo {
+    width: 400px;
+    height: 400px;
+    object-fit: contain; /* Ensures the image maintains its aspect ratio */
+}
+
+
 /* 🚀 Company Information Section */
 .company-info {
     background: #f8f9fa;
