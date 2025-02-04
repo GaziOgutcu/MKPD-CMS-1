@@ -29,45 +29,41 @@
 </div>
 
 
-<div class="container mt-5">
-    <div class="row">
         <!-- Framed News Section -->
         <div class="col-md-6">
-            <div class="card border-primary shadow">
-                <div class="card-header bg-primary text-white text-center">
-                    <h3 class="mb-0">Latest Construction News</h3>
+            <div class="card shadow-lg border-primary">
+                <div class="card-header bg-gradient text-white text-center" style="background: linear-gradient(45deg, #007bff, #00d9ff);">
+                    <h3 class="mb-0">📰 Latest Construction News</h3>
                 </div>
-                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                <div class="card-body news-container">
                     {% if news_items %}
-                        <ul class="list-unstyled">
+                        <ul class="list-group">
                             {% for news in news_items %}
-                            <li class="mb-3 border-bottom pb-2">
-                                <a href="{{ news['url'] }}" target="_blank" class="text-decoration-none text-primary">
+                            <li class="list-group-item news-item">
+                                <a href="{{ news['url'] }}" target="_blank" class="news-link">
                                     <strong>{{ news['title'] }}</strong>
                                 </a>
-                                <p class="small text-muted mb-0">Published: {{ news['publishedAt'] }}</p>
+                                <p class="small text-muted">📅 {{ news['publishedAt'] }}</p>
                             </li>
                             {% endfor %}
                         </ul>
 
-                        <!-- Pagination Controls -->
+                        <!-- Pagination -->
                         <nav aria-label="News pagination">
                             <ul class="pagination justify-content-center mt-3">
                                 {% if page > 1 %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ page - 1 }}">Previous</a>
+                                    <a class="page-link" href="?page={{ page - 1 }}">⬅ Prev</a>
                                 </li>
                                 {% endif %}
-
                                 {% for p in range(1, total_pages + 1) %}
                                 <li class="page-item {% if page == p %}active{% endif %}">
                                     <a class="page-link" href="?page={{ p }}">{{ p }}</a>
                                 </li>
                                 {% endfor %}
-
                                 {% if page < total_pages %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ page + 1 }}">Next</a>
+                                    <a class="page-link" href="?page={{ page + 1 }}">Next ➡</a>
                                 </li>
                                 {% endif %}
                             </ul>
@@ -78,6 +74,7 @@
                 </div>
             </div>
         </div>
+
 
 <!-- Framed Vehicles Section -->
 <div class="col-md-6">
@@ -127,7 +124,7 @@
             </div>
             <div class="mb-2 d-flex justify-content-between align-items-center">
                 <span><strong>Harm Drive ABN:</strong> <span id="abn">676847242</span></span>
-                <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('676847242', 'Harm Drive ABN')">Copy</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('676847242', 'Harm Drive ACN')">Copy</button>
             </div>
         </div>
 
