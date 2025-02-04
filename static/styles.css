@@ -160,48 +160,35 @@
 }
 
 /* ===================== */
-/* Log in page Styling */
+/* Log in Page Styling */
 /* ===================== */
 
-/* Input Customised */
-
-.input {
-    border: 2px solid #e8e8e8;
-    padding: 15px;
-    border-radius: 10px;
-    background-color: #212121;
-    font-size: small;
-    font-weight: bold;
-    text-align: center;
-   }
-   
-   .input:focus {
-    outline-color: white;
-    background-color: #212121;
-    color: #e8e8e8;
-    box-shadow: 5px 5px #888888;
-   }
-
-/* Full-page container */
 .login-page {
     background: linear-gradient(135deg, #003366, #00509e);
     color: #fff;
 }
 
-/* Card styling */
+/* ===================== */
+/* Centering Login Card */
+/* ===================== */
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+}
+
+/* ===================== */
+/* Card Styling */
+/* ===================== */
+
 .login-card {
     max-width: 400px;
     width: 100%;
     border: none;
     border-radius: 10px;
     overflow: hidden;
-}
-
-.login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh; /* Center vertically */
 }
 
 .card {
@@ -213,27 +200,27 @@
     text-align: center;
 }
 
-.input {
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
+/* ===================== */
+/* Card Header Styling */
+/* ===================== */
 
-/* Card Header */
 .card-header {
     padding: 20px;
     border-bottom: none;
 }
 
+/* ===================== */
 /* Logo Styling */
+/* ===================== */
+
 .login-logo {
     max-height: 80px;
     width: auto;
 }
 
-/* Form Elements */
+/* ===================== */
+/* Form Styling */
+/* ===================== */
 
 .form-container {
     display: flex;
@@ -241,6 +228,32 @@
     gap: 1rem;
     width: 100%;
 }
+
+/* ===================== */
+/* Input Field Styling */
+/* ===================== */
+
+.input {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    border: 2px solid #e8e8e8;
+    border-radius: 10px;
+    background-color: #212121;
+    color: #e8e8e8;
+}
+
+.input:focus {
+    outline-color: white;
+    background-color: #212121;
+    box-shadow: 5px 5px #888888;
+}
+
+/* ===================== */
+/* Form Control (Additional Inputs) */
+/* ===================== */
 
 .form-control {
     height: 45px;
@@ -254,6 +267,10 @@
     border-color: #00509e;
     box-shadow: 0 0 8px rgba(0, 80, 158, 0.4);
 }
+
+/* ===================== */
+/* Call-to-Action (CTA) Button */
+/* ===================== */
 
 .cta {
     display: inline-flex;
@@ -273,6 +290,7 @@
 .cta:hover {
     background-color: #0056b3;
 }
+
 
 /* Buttons */
 .btn {
