@@ -4,8 +4,12 @@
 
 {% block content %}
 
+<body class="bg-light">
+
 <!-- ✅ Navbar Placeholder (Loads navbar dynamically) -->
 <div id="navbar-placeholder"></div>
+
+
 
 <!-- Welcome Text Section -->
 <div class="text-center my-4">
@@ -14,6 +18,7 @@
         <p>Your central hub for managing companies, vehicles, employees, and projects.</p>
     </section>
 </div>
+
 
 <div class="container mt-5">
     <div class="row">
@@ -65,67 +70,66 @@
             </div>
         </div>
 
-        <!-- Framed Vehicles Section -->
-        <div class="col-md-6">
-            <div class="card border-danger shadow">
-                <!-- Card Header -->
-                <div class="card-header bg-danger text-white text-center">
-                    <h3 class="mb-0">Vehicles with Soon-to-Expire Rego</h3>
-                </div>
+<!-- Framed Vehicles Section -->
+<div class="col-md-6">
+    <div class="card border-danger shadow">
+        <!-- Card Header -->
+        <div class="card-header bg-danger text-white text-center">
+            <h3 class="mb-0">Vehicles with Soon-to-Expire Rego</h3>
+        </div>
 
-                <!-- Card Body: Table Section -->
-                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
-                    {% if vehicles and vehicles|length > 0 %}
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Plate</th>
-                                        <th>Type</th>
-                                        <th>Expiry (Days)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for vehicle in vehicles %}
-                                    <tr>
-                                        <td>{{ vehicle['Plate'] }}</td>
-                                        <td>{{ vehicle['Type'] }}</td>
-                                        <td class="text-danger">{{ vehicle['Expiry'] }} Days</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
-                    {% endif %}
+        <!-- Card Body: Table Section -->
+        <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+            {% if vehicles and vehicles|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Plate</th>
+                                <th>Type</th>
+                                <th>Expiry (Days)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vehicle in vehicles %}
+                            <tr>
+                                <td>{{ vehicle['Plate'] }}</td>
+                                <td>{{ vehicle['Type'] }}</td>
+                                <td class="text-danger">{{ vehicle['Expiry'] }} Days</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
+            {% else %}
+                <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
+            {% endif %}
+        </div>
 
                 <!-- Company Information with Copy Buttons -->
-                <div class="card-body">
-                    <div class="mb-2 d-flex justify-content-between align-items-center">
-                        <span><strong>Harm Drive CRN:</strong> <span id="crn">142123141</span></span>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('142123141', 'Harm Drive CRN')">Copy</button>
-                    </div>
-                    <div class="mb-2 d-flex justify-content-between align-items-center">
-                        <span><strong>Company Name:</strong> <span id="company">Harm Drive Pty Ltd</span></span>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('Harm Drive Pty Ltd', 'Company Name')">Copy</button>
-                    </div>
-                    <div class="mb-2 d-flex justify-content-between align-items-center">
-                        <span><strong>Harm Drive ABN:</strong> <span id="abn">676847242</span></span>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('676847242', 'Harm Drive ABN')">Copy</button>
-                    </div>
-                </div>
-
-                <!-- Renew Registration Button -->
-                <div class="card-footer text-center">
-                    <a href="https://www.service.transport.qld.gov.au/tmrauthentication/public/Login.xhtml?serviceName=RenewRegistrationMulti&qgovLoginSelected=N&entryPage=/application/Entry.xhtml&exitPage=/public/Farewell.xhtml&executionContext=qt&preferredIaal2Option=&dswid=-9947"
-                       target="_blank"
-                       class="btn btn-success btn-lg">
-                        Renew Registration
-                    </a>
-                </div>
+        <div class="card-body">
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+                <span><strong>Harm Drive CRN:</strong> <span id="crn">142123141</span></span>
+                <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('142123141', 'Harm Drive CRN')">Copy</button>
             </div>
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+                <span><strong>Company Name:</strong> <span id="company">Harm Drive Pty Ltd</span></span>
+                <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('Harm Drive Pty Ltd', 'Company Name')">Copy</button>
+            </div>
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+                <span><strong>Harm Drive ABN:</strong> <span id="abn">676847242</span></span>
+                <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('676847242', 'Harm Drive ABN')">Copy</button>
+            </div>
+        </div>
+
+
+        <!-- Renew Registration Button -->
+        <div class="card-footer text-center">
+            <a href="https://www.service.transport.qld.gov.au/tmrauthentication/public/Login.xhtml?serviceName=RenewRegistrationMulti&qgovLoginSelected=N&entryPage=/application/Entry.xhtml&exitPage=/public/Farewell.xhtml&executionContext=qt&preferredIaal2Option=&dswid=-9947"
+               target="_blank"
+               class="btn btn-success btn-lg">
+                Renew Registration
+            </a>
         </div>
     </div>
 </div>
@@ -146,7 +150,7 @@
             // Fallback for older browsers
             const textarea = document.createElement('textarea');
             textarea.value = text;
-            textarea.style.position = 'fixed';
+            textarea.style.position = 'fixed'; // Prevent scrolling
             textarea.style.opacity = '0'; // Invisible to user
             document.body.appendChild(textarea);
             textarea.focus();
@@ -185,6 +189,11 @@
     }
 </script>
 
+<!-- Footer -->
+<div class="text-center mt-5">
+    <p class="small text-muted">&copy; 2024 Gazi OGUTCU. All rights reserved.</p>
+</div>
+
 <!-- ✅ JavaScript to Load Navbar -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -202,9 +211,5 @@
     });
 </script>
 
-<!-- Footer -->
-<div class="text-center mt-5">
-    <p class="small text-muted">&copy; 2024 Gazi OGUTCU. All rights reserved.</p>
-</div>
 
 {% endblock %}
