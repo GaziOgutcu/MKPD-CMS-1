@@ -252,6 +252,44 @@
 }
 
 /* ===================== */
+/* Dashboard Card Styling */
+/* ===================== */
+
+.dashboard-card {
+    background-color: #f8f9fa; /* Light grey background */
+    border-radius: 10px;
+    border: 2px solid #ddd; /* Soft border */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.dashboard-card .card-header {
+    font-weight: bold;
+    padding: 15px;
+}
+
+.dashboard-card .card-body {
+    padding: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.dashboard-card .table th {
+    background-color: #212529;
+    color: white;
+}
+
+/* News Section */
+.news-card {
+    border-left: 5px solid #007bff; /* Blue accent border */
+}
+
+/* Vehicles Section */
+.vehicles-card {
+    border-left: 5px solid #dc3545; /* Red accent border */
+}
+
+/* ===================== */
 /* Form Control (Additional Inputs) */
 /* ===================== */
 

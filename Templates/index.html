@@ -22,7 +22,7 @@
 <!-- Welcome Text Section -->
 <div class="text-center my-4">
     <section class="welcome-text">
-        <h1>Welcome to Harm Drive Pty Ltd</h1>
+        <h1>Welcome to MKPD CMS</h1>
         <p>Your central hub for managing companies, vehicles, employees, and projects.</p>
     </section>
 </div>
@@ -32,11 +32,11 @@
     <div class="row">
         <!-- Framed News Section -->
         <div class="col-md-6">
-            <div class="card border-primary shadow">
+            <div class="card dashboard-card news-card shadow">
                 <div class="card-header bg-primary text-white text-center">
                     <h3 class="mb-0">Latest Construction News</h3>
                 </div>
-                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                <div class="card-body">
                     {% if news_items %}
                         <ul class="list-unstyled">
                             {% for news in news_items %}
@@ -78,41 +78,40 @@
             </div>
         </div>
 
-<!-- Framed Vehicles Section -->
-<div class="col-md-6">
-    <div class="card border-danger shadow">
-        <!-- Card Header -->
-        <div class="card-header bg-danger text-white text-center">
-            <h3 class="mb-0">Vehicles with Soon-to-Expire Rego</h3>
-        </div>
-
-        <!-- Card Body: Table Section -->
-        <div class="card-body" style="max-height: 500px; overflow-y: auto;">
-            {% if vehicles and vehicles|length > 0 %}
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Plate</th>
-                                <th>Type</th>
-                                <th>Expiry (Days)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for vehicle in vehicles %}
-                            <tr>
-                                <td>{{ vehicle['Plate'] }}</td>
-                                <td>{{ vehicle['Type'] }}</td>
-                                <td class="text-danger">{{ vehicle['Expiry'] }} Days</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        <!-- Framed Vehicles Section -->
+        <div class="col-md-6">
+            <div class="card dashboard-card vehicles-card shadow">
+                <div class="card-header bg-danger text-white text-center">
+                    <h3 class="mb-0">Vehicles with Soon-to-Expire Rego</h3>
                 </div>
-            {% else %}
-                <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
-            {% endif %}
-        </div>
+
+                <!-- Card Body: Table Section -->
+                <div class="card-body">
+                    {% if vehicles and vehicles|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Plate</th>
+                                        <th>Type</th>
+                                        <th>Expiry (Days)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for vehicle in vehicles %}
+                                    <tr>
+                                        <td>{{ vehicle['Plate'] }}</td>
+                                        <td>{{ vehicle['Type'] }}</td>
+                                        <td class="text-danger">{{ vehicle['Expiry'] }} Days</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
+                    {% endif %}
+                </div>
 
                 <!-- Company Information with Copy Buttons -->
                 <div class="card-body">
@@ -129,19 +128,24 @@
                         <button class="btn-96" onclick="copyToClipboard('676847242', 'Harm Drive ACN')"><span>Copy</span></button>
                     </div>
                 </div>
-                
 
+                <!-- Renew Registration Button -->
+                <div class="text-center p-3">
+                    <a href="https://www.service.transport.qld.gov.au/tmrauthentication/public/Login.xhtml?serviceName=RenewRegistrationMulti&qgovLoginSelected=N&entryPage=/application/Entry.xhtml&exitPage=/public/Farewell.xhtml&executionContext=qt&preferredIaal2Option=&dswid=-9947"
+                        target="_blank"
+                        class="cta">
+                        <span>Renew Registration</span>
+                        <svg width="15px" height="10px" viewBox="0 0 13 10">
+                            <path d="M1,5 L11,5"></path>
+                            <polyline points="8 1 12 5 8 9"></polyline>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        <!-- Renew Registration Button -->
-        <a href="https://www.service.transport.qld.gov.au/tmrauthentication/public/Login.xhtml?serviceName=RenewRegistrationMulti&qgovLoginSelected=N&entryPage=/application/Entry.xhtml&exitPage=/public/Farewell.xhtml&executionContext=qt&preferredIaal2Option=&dswid=-9947"
-            target="_blank"
-            class="cta">
-            <span>Renew Registration</span>
-            <svg width="15px" height="10px" viewBox="0 0 13 10">
-                <path d="M1,5 L11,5"></path>
-                <polyline points="8 1 12 5 8 9"></polyline>
-            </svg>
-        </a>
 
 
 
