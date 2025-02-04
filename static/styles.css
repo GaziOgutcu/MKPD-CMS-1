@@ -160,6 +160,83 @@
 }
 
 /* ===================== */
+/* Log in page Styling */
+/* ===================== */
+
+/* Full-page container */
+.login-page {
+    background: linear-gradient(135deg, #003366, #00509e);
+    color: #fff;
+}
+
+/* Card styling */
+.login-card {
+    max-width: 400px;
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+    padding: 20px;
+    border-bottom: none;
+}
+
+/* Logo Styling */
+.login-logo {
+    max-height: 80px;
+    width: auto;
+}
+
+/* Form Elements */
+.form-control {
+    height: 45px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.form-control:focus {
+    border-color: #00509e;
+    box-shadow: 0 0 8px rgba(0, 80, 158, 0.4);
+}
+
+/* Buttons */
+.btn {
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: all 0.3s ease-in-out;
+}
+
+.btn-dark:hover {
+    background-color: #00509e;
+    border-color: #00509e;
+    color: #fff;
+}
+
+/* Footer link */
+.card-footer a {
+    color: #00509e;
+    text-decoration: none;
+}
+
+.card-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+    .login-card {
+        margin: 0 15px;
+    }
+}
+
+
+/* ===================== */
 /* Copy Button Styling */
 /* ===================== */
 
@@ -213,6 +290,18 @@
 /* ===================== */
 /* Logo and Header Styling */
 /* ===================== */
+
+.company-logo {
+    width: 400px;
+    height: 400px;
+    object-fit: contain; /* Maintains the aspect ratio without distortion */
+    display: block;
+    margin: 0 auto; /* Centers the image horizontally */
+    border: 1px solid #ddd; /* Optional: Adds a border around the logo */
+    border-radius: 10px; /* Optional: Rounds the corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional: Adds a subtle shadow */
+}
+
 
 .logo {
     display: flex;
