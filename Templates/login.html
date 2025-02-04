@@ -20,23 +20,28 @@
             </div>
 
             <!-- Login Form Section -->
-            <div class="card-body">
-                <h2 class="text-center mb-4">Sign in to MKPD CMS</h2>
-                <form method="POST" action="{{ url_for('login') }}">
-                    <div class="form-group mb-3">                        
-                        <input type="password" name="text" class="input" placeholder="Enter your password!">
+            <div class="login-container">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="text-center mb-4">Sign in to MKPD CMS</h2>
+                        <form method="POST" action="{{ url_for('login') }}">
+                            <div class="form-group mb-3">                        
+                                <input type="password" name="password" class="input" placeholder="Enter your password!">
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="cta">
+                                    <span>SIGN IN</span>
+                                    <svg width="15px" height="10px" viewBox="0 0 13 10">
+                                        <path d="M1,5 L11,5"></path>
+                                        <polyline points="8 1 12 5 8 9"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="text-center">
-                        <button type="submit" 
-                        class="cta">
-                            <span>Renew Registration</span>
-                            <svg width="15px" height="10px" viewBox="0 0 13 10">
-                                <path d="M1,5 L11,5"></path>
-                                <polyline points="8 1 12 5 8 9"></polyline>
-                            </svg>
-                    </div>
-                </form>
+                </div>
             </div>
+
 
             <!-- Footer Section -->
             <div class="text-center mt-5">
