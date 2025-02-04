@@ -271,7 +271,7 @@ def harm_drive():
         # Format dates to DD/MM/YYYY
         def format_date_ddmmyyyy(date):
             if pd.notnull(date):
-                return pd.to_datetime(date).strftime("%d/%m/%Y")
+                return pd.to_datetime(date, dayfirst=True).strftime("%d/%m/%Y")
             return None
 
         # Calculate expiry days
