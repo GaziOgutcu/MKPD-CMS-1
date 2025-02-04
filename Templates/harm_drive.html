@@ -165,7 +165,7 @@
     <!-- ✅ JavaScript to Load Navbar -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            fetch("/navbar")
+            fetch("/navbar")  
                 .then(response => {
                     if (!response.ok) {
                         throw new Error("Navbar file not found!");
@@ -174,9 +174,17 @@
                 })
                 .then(data => {
                     document.getElementById("navbar-placeholder").innerHTML = data;
+    
+                    // ✅ Re-initialize Bootstrap dropdowns after navbar loads
+                    var dropdowns = document.querySelectorAll('.dropdown-toggle');
+                    dropdowns.forEach(function (dropdown) {
+                        new bootstrap.Dropdown(dropdown);
+                    });
+    
                 })
                 .catch(error => console.error("Error loading navbar:", error));
         });
     </script>
+    
 </body>
 </html>
