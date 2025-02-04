@@ -74,6 +74,67 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* 🔥 Toast Container */
+.custom-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    transform: translateX(100%);
+    opacity: 0;
+    z-index: 9999;
+}
+
+/* 🟢 Success Toast */
+.toast-success {
+    background-color: #28a745;
+    color: white;
+}
+
+/* 🔴 Error Toast */
+.toast-error {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* 🟡 Warning Toast */
+.toast-warning {
+    background-color: #ffc107;
+    color: black;
+}
+
+/* 🔵 Info Toast */
+.toast-info {
+    background-color: #17a2b8;
+    color: white;
+}
+
+/* 🎯 Show Animation */
+.custom-toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* ❌ Close Button */
+.toast-close {
+    cursor: pointer;
+    margin-left: auto;
+    font-size: 18px;
+}
+
+/* 🛎 Icon */
+.toast-icon {
+    font-size: 20px;
+}
+
 
 /* 🔹 News Section Styling */
 .news-container {

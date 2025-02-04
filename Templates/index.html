@@ -143,6 +143,43 @@
 
 <!-- ✅ JavaScript to Load Navbar -->
 <script>
+
+        function showToast(message, type = 'success') {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.classList.add('custom-toast', `toast-${type}`);
+            toast.innerHTML = `
+                <span class="toast-icon">${getToastIcon(type)}</span>
+                <span class="toast-message">${message}</span>
+                <span class="toast-close" onclick="this.parentElement.remove()">✖</span>
+            `;
+
+            // Append to body
+            document.body.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Function to return an appropriate icon
+        function getToastIcon(type) {
+            switch (type) {
+                case 'success': return '✅';
+                case 'error': return '❌';
+                case 'warning': return '⚠️';
+                case 'info': return 'ℹ️';
+                default: return '🔔';
+            }
+        }
+
     document.addEventListener("DOMContentLoaded", function () {
         fetch("/navbar") // Fetch the navbar.html file via Flask
             .then(response => {
