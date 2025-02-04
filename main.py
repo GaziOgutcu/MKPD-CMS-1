@@ -534,8 +534,14 @@ def add_company():
                 flash("Company Name and ABN are required!", "error")
                 return redirect(url_for("add_company"))
 
+            # Validate ABN format
+            import re
+            if not re.match(r'^\d{11}$', abn):
+                flash("Invalid ABN format. It must be 11 digits.", "error")
+                return redirect(url_for("add_company"))
+
             # Create a unique folder for the company
-            folder_name = f"{company_name}_{abn}"
+            folder_name = secure_filename(f"{company_name}_{abn}")
             folder_path = os.path.join(MAIN_DIR, folder_name)
             os.makedirs(folder_path, exist_ok=True)
 
@@ -550,10 +556,20 @@ def add_company():
             for field_name in ["company_registration", "logo"]:
                 file = request.files.get(field_name)
                 if file and allowed_file(file.filename):
-                    file.save(os.path.join(folder_path, secure_filename(file.filename)))
+                    saved_path = os.path.join(folder_path, secure_filename(file.filename))
+                    file.save(saved_path)
+                    app.logger.info(f"Saved {field_name} to {saved_path}")
 
             # Update the Excel file
+            if not os.path.exists(EXCEL_FILE):
+                flash("Company data file not found. Please create the file first.", "error")
+                return redirect(url_for("add_company"))
+
             df = pd.read_excel(EXCEL_FILE, engine="openpyxl")
+            if "Company Name" not in df.columns or "ABN" not in df.columns:
+                flash("Missing required columns in the data file.", "error")
+                return redirect(url_for("add_company"))
+
             if any((df["Company Name"] == company_name) & (df["ABN"] == abn)):
                 flash("A company with this name and ABN already exists!", "error")
                 return redirect(url_for("add_company"))
@@ -578,16 +594,23 @@ def add_company():
         return render_template("add_company.html", title="Add Company")
 
     except Exception as e:
+        app.logger.error(f"Error adding company: {e}")
         flash(f"Error adding company: {e}", "error")
         return redirect(url_for("view_company"))
+
 
 
 @app.route("/view_company", methods=["GET", "POST"])
 @login_required
 def view_company():
     try:
+        # Ensure the Excel file exists
+        if not os.path.exists(EXCEL_FILE):
+            flash("No company data file found!", "error")
+            return redirect(url_for("add_company"))
+
         # Load company data from the Excel file
-        df = pd.read_excel(EXCEL_FILE, engine="openpyxl", dtype={"QBCC License Number": str})  # Ensure QBCC is treated as a string
+        df = pd.read_excel(EXCEL_FILE, engine="openpyxl", dtype={"QBCC License Number": str})
         if df.empty:
             flash("No companies found. Please add a company first.", "info")
             return redirect(url_for("add_company"))
@@ -602,8 +625,8 @@ def view_company():
                 flash("Please select a company.", "error")
                 return redirect(url_for("view_company"))
 
-            # Filter the dataframe to find the selected company
-            company = df[df["Company Name"].str.strip() == selected_company.strip()]
+            # Filter the DataFrame to find the selected company
+            company = df[df["Company Name"].str.strip().str.lower() == selected_company.strip().lower()]
             if company.empty:
                 flash("Company not found.", "error")
                 return redirect(url_for("view_company"))
@@ -611,8 +634,13 @@ def view_company():
             # Get the first matching company as a dictionary
             company = company.iloc[0].to_dict()
 
-            # Determine the folder path for the selected company
-            folder_name = company["Documents"]
+            # Validate the Documents field
+            folder_name = company.get("Documents")
+            if not folder_name:
+                flash("Document folder not specified for this company.", "error")
+                return redirect(url_for("view_company"))
+
+            # Validate the folder path
             folder_path = os.path.join(MAIN_DIR, folder_name)
             if not os.path.exists(folder_path):
                 flash("Document folder does not exist.", "error")
@@ -639,8 +667,10 @@ def view_company():
         return render_template("view_company.html", title="View Companies", companies=companies)
 
     except Exception as e:
+        app.logger.error(f"Error loading companies: {e}")
         flash(f"Error loading companies: {e}", "error")
         return redirect(url_for("index"))
+
 
 @app.route("/add_project", methods=["GET", "POST"])
 @login_required
