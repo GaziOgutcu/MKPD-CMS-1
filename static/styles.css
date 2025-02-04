@@ -82,19 +82,25 @@
 }
 
 /* ===================== */
-/* Copyright Styles */
+/* Copyright Styles (Centered) */
 /* ===================== */
 
 .copyright {
     position: fixed;
     bottom: 0;
-    right: 0;
+    left: 50%;
+    transform: translateX(-50%);
     padding: 10px;
-    font-size: 12px;
-    color: #6c757d;
+    font-size: 14px;
+    color: #ffffff;
     background-color: #184d82;
     border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    text-align: center;
+    width: 100%;
+    max-width: 300px;
 }
+
 
 /* ===================== */
 /* Navbar Toggler Styles */
