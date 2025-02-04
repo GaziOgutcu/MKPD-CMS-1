@@ -29,149 +29,91 @@
 </div>
 
 
-            <div class="container mt-5">
-                <div class="row g-4"> <!-- "g-4" adds spacing between cards -->
-                    <!-- Framed News Section -->
-                    <div class="col-md-6"> <!-- Take Half of the Width -->
-                        <div class="card shadow-lg border-primary">
-                            <div class="card-header bg-gradient text-white text-center" style="background: linear-gradient(45deg, #007bff, #00d9ff);">
-                                <h3 class="mb-0">📰 Latest Construction News</h3>
+        <div class="container mt-5">
+            <div class="row g-4 justify-content-center">
+                <!-- 📰 News Section -->
+                <div class="col-md-4">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <!-- Front Side -->
+                            <div class="flip-card-front bg-primary text-white">
+                                <h3>📰 Latest News</h3>
+                                <p>Stay updated with the latest construction news.</p>
                             </div>
-                            <div class="card-body news-container">
-                                {% if news_items %}
-                                    <ul class="list-group">
-                                        {% for news in news_items %}
-                                        <li class="list-group-item news-item">
-                                            <a href="{{ news['url'] }}" target="_blank" class="news-link">
-                                                <strong>{{ news['title'] }}</strong>
-                                            </a>
-                                            <p class="small text-muted">📅 {{ news['publishedAt'] }}</p>
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                    <nav aria-label="News pagination">
-                                        <ul class="pagination justify-content-center mt-3">
-                                            {% if page > 1 %}
-                                            <li class="page-item">
-                                                <a class="page-link" href="?page={{ page - 1 }}">⬅ Prev</a>
-                                            </li>
-                                            {% endif %}
-                                            {% for p in range(1, total_pages + 1) %}
-                                            <li class="page-item {% if page == p %}active{% endif %}">
-                                                <a class="page-link" href="?page={{ p }}">{{ p }}</a>
-                                            </li>
-                                            {% endfor %}
-                                            {% if page < total_pages %}
-                                            <li class="page-item">
-                                                <a class="page-link" href="?page={{ page + 1 }}">Next ➡</a>
-                                            </li>
-                                            {% endif %}
-                                        </ul>
-                                    </nav>
-                                {% else %}
-                                    <p class="text-center text-muted">No recent news available.</p>
-                                {% endif %}
+                            <!-- Back Side -->
+                            <div class="flip-card-back bg-light">
+                                <ul class="list-group">
+                                    {% for news in news_items %}
+                                    <li class="list-group-item">
+                                        <a href="{{ news['url'] }}" target="_blank" class="news-link">
+                                            <strong>{{ news['title'] }}</strong>
+                                        </a>
+                                        <p class="small text-muted">📅 {{ news['publishedAt'] }}</p>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
                             </div>
                         </div>
                     </div>
+                </div>
 
-
-            <!-- Vehicles with Soon-to-Expire Rego -->
-                <div class="col-md-6">
-                    <div class="card shadow-lg border-danger">
-                        <div class="card-header bg-gradient text-white text-center" style="background: linear-gradient(45deg, #dc3545, #ff6b6b);">
-                            <h3 class="mb-0">🚗 Vehicles with Soon-to-Expire Rego</h3>
-                        </div>
-                        <div class="card-body vehicle-container">
-                            {% if vehicles and vehicles|length > 0 %}
+                <!-- 🚗 Vehicles with Soon-to-Expire Rego -->
+                <div class="col-md-4">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front bg-danger text-white">
+                                <h3>🚗 Vehicles Expiring Soon</h3>
+                                <p>Check which vehicles need registration renewal.</p>
+                            </div>
+                            <div class="flip-card-back bg-light">
                                 <table class="table table-hover">
                                     <thead class="table-dark">
-                                        <tr>
-                                            <th>Plate</th>
-                                            <th>Type</th>
-                                            <th>Expiry (Days)</th>
-                                        </tr>
+                                        <tr><th>Plate</th><th>Expiry (Days)</th></tr>
                                     </thead>
                                     <tbody>
                                         {% for vehicle in vehicles %}
                                         <tr>
                                             <td><strong>{{ vehicle['Plate'] }}</strong></td>
-                                            <td>{{ vehicle['Type'] }}</td>
                                             <td class="text-danger"><strong>{{ vehicle['Expiry'] }} Days</strong></td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
-                            {% else %}
-                                <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
-                            {% endif %}
-                        </div>
-
-                        <!-- 🚀 Integrated Company Information & Copy Buttons -->
-                        <div class="card-body">
-                            <div class="company-info">
-                                <h5 class="text-center text-primary mb-3">🏢 Company Information</h5>
-                                <div class="copy-container">
-                                    <div class="copy-item">
-                                        <span><strong>📄 Harm Drive CRN:</strong> <span id="crn">142123141</span></span>
-                                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('142123141', 'Harm Drive CRN')">📋 Copy</button>
-                                    </div>
-                                    <div class="copy-item">
-                                        <span><strong>🏢 Company Name:</strong> <span id="company">Harm Drive Pty Ltd</span></span>
-                                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('Harm Drive Pty Ltd', 'Company Name')">📋 Copy</button>
-                                    </div>
-                                    <div class="copy-item">
-                                        <span><strong>📜 Harm Drive ABN:</strong> <span id="abn">676847242</span></span>
-                                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('676847242', 'Harm Drive ABN')">📋 Copy</button>
-                                    </div>
-                                </div>
                             </div>
-                        </div>
-
-                        <!-- 🔄 Renew Registration Button -->
-                        <div class="card-footer text-center">
-                            <a href="https://www.service.transport.qld.gov.au/tmrauthentication/public/Login.xhtml?serviceName=RenewRegistrationMulti&qgovLoginSelected=N&entryPage=/application/Entry.xhtml&exitPage=/public/Farewell.xhtml&executionContext=qt&preferredIaal2Option=&dswid=-9947"
-                            target="_blank"
-                            class="btn btn-success btn-lg px-4">
-                                🔄 Renew Registration
-                            </a>
                         </div>
                     </div>
                 </div>
 
-<script>
-    // Copy to Clipboard Function
-    function copyToClipboard(text, label) {
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(text)
-                .then(() => {
-                    showToast(`${label} copied to clipboard!`);
-                })
-                .catch(err => {
-                    console.error('Clipboard write failed: ', err);
-                    alert('Failed to copy. Please try again.');
-                });
-        } else {
-            // Fallback for older browsers
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.style.position = 'fixed'; // Prevent scrolling
-            textarea.style.opacity = '0'; // Invisible to user
-            document.body.appendChild(textarea);
-            textarea.focus();
-            textarea.select();
+                <!-- 🏢 Company Info -->
+                <div class="col-md-4">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front bg-info text-white">
+                                <h3>🏢 Company Info</h3>
+                                <p>Quick access to company details.</p>
+                            </div>
+                            <div class="flip-card-back bg-light">
+                                <div class="copy-container">
+                                    <div class="copy-item">
+                                        <span><strong>📄 CRN:</strong> <span id="crn">142123141</span></span>
+                                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('142123141', 'CRN')">📋 Copy</button>
+                                    </div>
+                                    <div class="copy-item">
+                                        <span><strong>🏢 Name:</strong> <span id="company">Harm Drive Pty Ltd</span></span>
+                                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('Harm Drive Pty Ltd', 'Company Name')">📋 Copy</button>
+                                    </div>
+                                    <div class="copy-item">
+                                        <span><strong>📜 ABN:</strong> <span id="abn">676847242</span></span>
+                                        <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('676847242', 'ABN')">📋 Copy</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            try {
-                document.execCommand('copy');
-                showToast(`${label} copied to clipboard!`);
-            } catch (err) {
-                console.error('Fallback copy failed: ', err);
-                alert('Failed to copy. Please try again.');
-            }
-
-            document.body.removeChild(textarea);
-        }
-    }
 
     // Toast Notification Function
     function showToast(message) {
