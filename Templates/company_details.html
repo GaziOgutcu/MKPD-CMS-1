@@ -18,9 +18,12 @@
     <div id="navbar-placeholder"></div>
 
     <!-- ✅ Logo Section -->
-    <div class="container text-center my-4">
-        <img src="{{ logo_url }}" alt="Company Logo" class="img-fluid company-logo">
-    </div>
+    <!-- ✅ Display Company Logo -->
+        <div class="container text-center my-4">
+            <img src="{{ get_company_logo_static(company['Company Name'], company['ABN']) }}" 
+                alt="Company Logo" class="img-fluid company-logo">
+        </div>
+
 
     <!-- ✅ Company Details Section -->
     <div class="container py-5">

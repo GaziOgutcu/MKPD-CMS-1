@@ -575,7 +575,7 @@ def add_employee():
 def add_company():
     try:
         if request.method == "POST":
-            # Collect data from the form
+            # ✅ Collect data from the form
             company_name = request.form["company_name"].strip()
             registration_date = request.form["registration_date"].strip()
             abn = request.form["abn"].strip()
@@ -584,47 +584,50 @@ def add_company():
             registered_address = request.form.get("registered_address", "").strip()
             qbcc_license_number = request.form.get("qbcc_license_number", "").strip()
 
-            # Validate required fields
+            # ✅ Validate required fields
             if not company_name or not abn:
                 flash("Company Name and ABN are required!", "error")
                 return redirect(url_for("add_company"))
 
-            # Validate ABN format
+            # ✅ Ensure ABN is a valid 11-digit number
             import re
             if not re.match(r'^\d{11}$', abn):
                 flash("Invalid ABN format. It must be 11 digits.", "error")
                 return redirect(url_for("add_company"))
 
-            # Create a unique folder for the company
-            folder_name = secure_filename(f"{company_name}_{abn}")
+            # ✅ Create a unique folder in `CompanyFolders/`
+            folder_name = f"{company_name}_{abn}"
             folder_path = os.path.join(MAIN_DIR, folder_name)
             os.makedirs(folder_path, exist_ok=True)
 
-            # Handle mandatory ASIC Extract upload
+            # ✅ Handle ASIC Extract upload (Mandatory)
             asic_extract = request.files.get("asic_extract")
             if not asic_extract or not allowed_file(asic_extract.filename):
                 flash("ASIC Extract is required and must be a valid file!", "error")
                 return redirect(url_for("add_company"))
             asic_extract.save(os.path.join(folder_path, secure_filename(asic_extract.filename)))
 
-            # Handle optional document uploads
-            for field_name in ["company_registration", "logo"]:
+            # ✅ Handle optional document uploads (Company Registration, Logo)
+            for field_name in ["company_registration"]:
                 file = request.files.get(field_name)
                 if file and allowed_file(file.filename):
-                    saved_path = os.path.join(folder_path, secure_filename(file.filename))
-                    file.save(saved_path)
-                    app.logger.info(f"Saved {field_name} to {saved_path}")
+                    file.save(os.path.join(folder_path, secure_filename(file.filename)))
 
-            # Update the Excel file
+            # ✅ Handle the Company Logo Upload (Save to `static/`)
+            logo = request.files.get("logo")
+            if logo and allowed_file(logo.filename):
+                ext = logo.filename.rsplit(".", 1)[1].lower()
+                logo_filename = f"{company_name}_{abn}.{ext}"
+                logo.save(os.path.join("static", logo_filename))
+
+            # ✅ Save the company details to `CompanyData.xlsx`
             if not os.path.exists(EXCEL_FILE):
                 flash("Company data file not found. Please create the file first.", "error")
                 return redirect(url_for("add_company"))
 
             df = pd.read_excel(EXCEL_FILE, engine="openpyxl")
-            if "Company Name" not in df.columns or "ABN" not in df.columns:
-                flash("Missing required columns in the data file.", "error")
-                return redirect(url_for("add_company"))
 
+            # Prevent duplicates
             if any((df["Company Name"] == company_name) & (df["ABN"] == abn)):
                 flash("A company with this name and ABN already exists!", "error")
                 return redirect(url_for("add_company"))
@@ -645,13 +648,15 @@ def add_company():
             flash("Company added successfully!", "success")
             return redirect(url_for("view_company"))
 
-        # Render the Add Company form
         return render_template("add_company.html", title="Add Company")
 
     except Exception as e:
         app.logger.error(f"Error adding company: {e}")
         flash(f"Error adding company: {e}", "error")
         return redirect(url_for("view_company"))
+
+
+
 
 
 
