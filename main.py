@@ -727,12 +727,11 @@ def view_company():
         return render_template(
             "company_details.html",
             title="Company Details",
-            company=company if company else {},
+            company=company if company else {},  # ✅ Ensures it never passes None
             documents=documents,
-            logo_url=get_company_logo_static(company["Company Name"], abn),
-            get_company_logo_static=get_company_logo_static,  # ✅ Explicitly pass it
+            logo_url=logo_url,
+            companies=companies,  # ✅ Ensures dropdown works
         )
-
 
     except Exception as e:
         app.logger.error(f"Error loading companies: {e}")
