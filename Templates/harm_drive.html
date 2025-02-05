@@ -76,55 +76,54 @@
         </div>
     </div>
 
-    <!-- ✅ Add New Vehicle Section -->
-    <div class="container py-4">
-        <h3 class="text-center text-secondary mb-3">Add New Vehicle</h3>
-        <form method="POST" action="/add_vehicle" class="row g-3">
-            <div class="col-md-3">
-                <input type="text" name="plate" class="form-control" placeholder="Plate" required>
-            </div>
-            <div class="col-md-3">
-                <input type="text" name="type" class="form-control" placeholder="Type" required>
-            </div>
-            <div class="col-md-3">
-                <input type="text" name="vin" class="form-control" placeholder="VIN" required>
-            </div>
-            <div class="col-md-3">
-                <input type="date" name="rego_renewal_date" class="form-control" required>
-            </div>
-            <div class="col-md-3">
-                <input type="date" name="ctp_date" class="form-control" placeholder="CTP Date">
-            </div>
-            <div class="col-md-3">
-                <input type="number" name="value" class="form-control" placeholder="Value" required>
-            </div>
-            <div class="col-md-3">
-                <input type="number" name="transfer_fee" class="form-control" placeholder="Transfer Fee">
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-success w-100">Add Vehicle</button>
-            </div>
-        </form>
+    <!-- ✅ Add New Vehicle Button -->
+    <div class="container text-center py-4">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+            Add New Vehicle
+        </button>
     </div>
 
-    <!-- ✅ Update Modal -->
-    <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <!-- ✅ Add Vehicle Modal -->
+    <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="updateModalLabel">Update Rego Renewal Date</h5>
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="addVehicleModalLabel">Add New Vehicle</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form method="POST" action="/update_vehicle">
+                <form method="POST" action="/add_vehicle">
                     <div class="modal-body">
-                        <input type="hidden" id="plateToUpdate" name="plate_to_update">
                         <div class="mb-3">
-                            <label for="newRegoRenewalDate" class="form-label">New Rego Renewal Date</label>
-                            <input type="date" class="form-control" id="newRegoRenewalDate" name="new_rego_renewal_date" required>
+                            <label for="plate" class="form-label">Plate Number</label>
+                            <input type="text" id="plate" name="plate" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Vehicle Type</label>
+                            <input type="text" id="type" name="type" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="vin" class="form-label">VIN</label>
+                            <input type="text" id="vin" name="vin" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="regoRenewalDate" class="form-label">Rego Renewal Date</label>
+                            <input type="date" id="regoRenewalDate" name="rego_renewal_date" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="ctpDate" class="form-label">Insurance Renewal (CTP) Date</label>
+                            <input type="date" id="ctpDate" name="ctp_date" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="value" class="form-label">Value</label>
+                            <input type="number" id="value" name="value" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transferFee" class="form-label">Transfer Fee</label>
+                            <input type="number" id="transferFee" name="transfer_fee" class="form-control">
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="submit" class="btn btn-success">Add Vehicle</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </form>
@@ -137,7 +136,7 @@
         <p class="small text-muted">&copy; 2024 Gazi OGUTCU. All rights reserved.</p>
     </footer>
 
-    <!-- JavaScript for Delete -->
+    <!-- ✅ JavaScript for Delete Vehicle -->
     <script>
         function deleteVehicle(button) {
             const plate = button.getAttribute('data-plate');
@@ -152,16 +151,6 @@
         }
     </script>
 
-    <!-- JavaScript for Update Modal -->
-    <script>
-        const updateModal = document.getElementById('updateModal');
-        updateModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const plate = button.getAttribute('data-plate');
-            document.getElementById('plateToUpdate').value = plate;
-        });
-    </script>
-
     <!-- ✅ JavaScript to Load Navbar -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -174,17 +163,15 @@
                 })
                 .then(data => {
                     document.getElementById("navbar-placeholder").innerHTML = data;
-    
+
                     // ✅ Re-initialize Bootstrap dropdowns after navbar loads
                     var dropdowns = document.querySelectorAll('.dropdown-toggle');
                     dropdowns.forEach(function (dropdown) {
                         new bootstrap.Dropdown(dropdown);
                     });
-    
                 })
                 .catch(error => console.error("Error loading navbar:", error));
         });
     </script>
-    
+
 </body>
-</html>
