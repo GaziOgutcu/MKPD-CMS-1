@@ -25,7 +25,7 @@ PROJECTS_FILE = "projects.xlsx"
 PROJECT_IMAGES_DIR = os.path.join("static", "project_images")
 
 # File path for Wahoo Pool Vehicles
-WAHOO_VEHICLES_FILE = "wahoo_vehicles.xlsx"
+WAHOO_VEHICLES_FILE = "wahoo_pool_vehicles.xlsx"
 
 
 if not os.path.exists(PROJECT_IMAGES_DIR):
@@ -455,8 +455,10 @@ def delete_vehicle():
 # Ensure the Wahoo Vehicles file exists
 def setup_wahoo_vehicles_file():
     if not os.path.exists(WAHOO_VEHICLES_FILE):
-        columns = ["Plate", "Type", "Expiry"]
-        pd.DataFrame(columns=columns).to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
+        columns = ["Plate", "Type", "Expiry Date"]
+        df = pd.DataFrame(columns=columns)
+        df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
+
 
 setup_wahoo_vehicles_file()
 
@@ -473,33 +475,31 @@ def wahoo_vehicles():
 
     return render_template("dashboard.html", wahoo_vehicles=wahoo_vehicles_list)
 
-# Route to add a new Wahoo Pool Vehicle
 @app.route('/add_wahoo_vehicle', methods=['POST'])
 def add_wahoo_vehicle():
     try:
-        # Get data from the form
-        plate = request.form['plate']
-        vehicle_type = request.form['type']
-        expiry_date = request.form['expiry_date']
+        # ✅ Read form data
+        plate = request.form.get('plate')
+        vehicle_type = request.form.get('type')
+        expiry_date = request.form.get('expiry_date')
 
-        # Load the existing Excel sheet or create a new DataFrame
-        if os.path.exists(WAHOO_VEHICLES_FILE):
-            df = pd.read_excel(WAHOO_VEHICLES_FILE)
-        else:
-            df = pd.DataFrame(columns=["Plate", "Type", "Expiry Date"])
+        # ✅ Validate data
+        if not plate or not vehicle_type or not expiry_date:
+            return jsonify({"success": False, "error": "All fields are required!"}), 400
 
-        # Add the new vehicle to the DataFrame
+        # ✅ Read the Excel file
+        df = pd.read_excel(WAHOO_VEHICLES_FILE)
+
+        # ✅ Append the new vehicle
         new_vehicle = {"Plate": plate, "Type": vehicle_type, "Expiry Date": expiry_date}
         df = pd.concat([df, pd.DataFrame([new_vehicle])], ignore_index=True)
 
-        # Save the updated DataFrame back to the Excel sheet
+        # ✅ Save the updated data
         df.to_excel(WAHOO_VEHICLES_FILE, index=False)
 
-        # Optionally redirect to the same page or return success
         return jsonify({"success": True, "message": "Vehicle added successfully!"})
 
     except Exception as e:
-        # Handle errors
         return jsonify({"success": False, "error": str(e)}), 500
 
 

@@ -262,7 +262,7 @@
     </script>
 
     <script>
-                document.querySelector('#addVehicleModal form').addEventListener('submit', function (e) {
+        document.querySelector('#addVehicleModal form').addEventListener('submit', function (e) {
             e.preventDefault(); // Prevent default form submission
             const form = e.target;
             const formData = new FormData(form);
@@ -271,36 +271,36 @@
                 method: 'POST',
                 body: formData,
             })
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Close the modal using Bootstrap's proper method
-                        const modalElement = document.querySelector('#addVehicleModal');
-                        const modalInstance = new bootstrap.Modal(modalElement);
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // ✅ Close the modal properly
+                    const modalElement = document.querySelector('#addVehicleModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    if (modalInstance) {
                         modalInstance.hide();
-
-                        // Reset form fields
-                        form.reset();
-
-                        // Show success message
-                        alert(data.message);
-
-                        // Reload the table (optional)
-                        location.reload(); 
-                    } else {
-                        alert('Failed to add vehicle: ' + data.error);
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while adding the vehicle.');
-                });
+
+                    // ✅ Reset form fields
+                    form.reset();
+
+                    // ✅ Show success message
+                    alert(data.message);
+
+                    // ✅ Reload the table (optional)
+                    location.reload(); 
+                } else {
+                    alert('Failed to add vehicle: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while adding the vehicle.');
+            });
         });
-
-
     </script>
 
 
