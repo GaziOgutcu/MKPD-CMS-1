@@ -173,6 +173,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <form method="POST" action="{{ url_for('add_wahoo_vehicle') }}">
+
                                 <div class="modal-body">
                                     <div class="mb-3">
                                         <label for="plate" class="form-label">Plate Number</label>
@@ -261,33 +262,44 @@
     </script>
 
     <script>
-            document.querySelector('#addVehicleModal form').addEventListener('submit', function (e) {
-        e.preventDefault(); // Prevent default form submission
-        const form = e.target;
+                document.querySelector('#addVehicleModal form').addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent default form submission
+            const form = e.target;
+            const formData = new FormData(form);
 
-        fetch(form.action, {
-            method: 'POST',
-            body: new FormData(form),
-        })
-            .then(response => {
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                return response.json();
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
             })
-            .then(data => {
-                if (data.success) {
-                    // Close the modal
-                    const modal = bootstrap.Modal.getInstance(document.querySelector('#addVehicleModal'));
-                    modal.hide();
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Close the modal using Bootstrap's proper method
+                        const modalElement = document.querySelector('#addVehicleModal');
+                        const modalInstance = new bootstrap.Modal(modalElement);
+                        modalInstance.hide();
 
-                    // Optionally reload the page or update the table dynamically
-                    alert(data.message);
-                    location.reload(); // Reload page for updated data
-                } else {
-                    alert('Failed to add vehicle: ' + data.error);
-                }
-            })
-            .catch(error => console.error('Error:', error));
+                        // Reset form fields
+                        form.reset();
+
+                        // Show success message
+                        alert(data.message);
+
+                        // Reload the table (optional)
+                        location.reload(); 
+                    } else {
+                        alert('Failed to add vehicle: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while adding the vehicle.');
+                });
         });
+
 
     </script>
 

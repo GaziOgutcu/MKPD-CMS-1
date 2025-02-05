@@ -474,28 +474,33 @@ def wahoo_vehicles():
     return render_template("dashboard.html", wahoo_vehicles=wahoo_vehicles_list)
 
 # Route to add a new Wahoo Pool Vehicle
-@app.route("/add_wahoo_vehicle", methods=["GET", "POST"])
-@login_required
+@app.route('/add_wahoo_vehicle', methods=['POST'])
 def add_wahoo_vehicle():
-    if request.method == "POST":
-        try:
-            plate = request.form["plate"].strip()
-            type_ = request.form["type"].strip()
-            expiry = int(request.form["expiry"].strip())
+    try:
+        # Get data from the form
+        plate = request.form['plate']
+        vehicle_type = request.form['type']
+        expiry_date = request.form['expiry_date']
 
-            new_vehicle = {"Plate": plate, "Type": type_, "Expiry": expiry}
+        # Load the existing Excel sheet or create a new DataFrame
+        if os.path.exists(EXCEL_PATH):
+            df = pd.read_excel(EXCEL_PATH)
+        else:
+            df = pd.DataFrame(columns=["Plate", "Type", "Expiry Date"])
 
-            df = pd.read_excel(WAHOO_VEHICLES_FILE, engine="openpyxl")
-            df = pd.concat([df, pd.DataFrame([new_vehicle])], ignore_index=True)
-            df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
+        # Add the new vehicle to the DataFrame
+        new_vehicle = {"Plate": plate, "Type": vehicle_type, "Expiry Date": expiry_date}
+        df = pd.concat([df, pd.DataFrame([new_vehicle])], ignore_index=True)
 
-            flash("Wahoo Pool Vehicle added successfully!", "success")
-            return redirect(url_for("wahoo_vehicles"))
+        # Save the updated DataFrame back to the Excel sheet
+        df.to_excel(EXCEL_PATH, index=False)
 
-        except Exception as e:
-            flash(f"Error adding Wahoo Vehicle: {e}", "error")
+        # Optionally redirect to the same page or return success
+        return jsonify({"success": True, "message": "Vehicle added successfully!"})
 
-    return render_template("add_wahoo_vehicle.html")
+    except Exception as e:
+        # Handle errors
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 
