@@ -678,7 +678,7 @@ def view_company():
         # Convert company data to a list of dictionaries for rendering
         companies = df.to_dict(orient="records")
 
-        # ✅ Initialize variables to prevent "local variable referenced before assignment" error
+        # ✅ Initialize variables to prevent "NoneType is not subscriptable" error
         company = None
         documents = {}
         logo_url = url_for("static", filename="NO LOGO AVAILABLE.png")  # Default logo
@@ -702,7 +702,13 @@ def view_company():
 
             # Convert the first matching row to a dictionary
             company = company_data.iloc[0].to_dict()
-            abn = str(company.get("ABN", "")).strip()  # ✅ Convert to string first
+
+            # ✅ Ensure company is not None before accessing its fields
+            if not company:
+                flash("Company data could not be retrieved.", "error")
+                return redirect(url_for("view_company"))
+
+            abn = str(company.get("ABN", "")).strip()  # Convert to string safely
 
             # ✅ Get company logo
             logo_url = get_company_logo_static(company["Company Name"], abn)
@@ -721,16 +727,17 @@ def view_company():
         return render_template(
             "company_details.html",
             title="Company Details",
-            company=company,
+            company=company if company else {},  # ✅ Ensures it never passes None
             documents=documents,
-            logo_url=get_company_logo_static(company["Company Name"], abn),
+            logo_url=logo_url,
+            companies=companies,  # ✅ Ensures dropdown works
         )
-
 
     except Exception as e:
         app.logger.error(f"Error loading companies: {e}")
         flash(f"Error loading companies: {e}", "error")
         return redirect(url_for("index"))
+
 
 
 
