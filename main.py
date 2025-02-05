@@ -697,7 +697,8 @@ def view_company():
 
             # Convert the first matching row to a dictionary
             company = company.iloc[0].to_dict()
-            abn = company.get("ABN", "").strip()  # ✅ Extract ABN
+            abn = str(company.get("ABN", "")).strip()  # ✅ Convert to string first
+
 
             # ✅ Pass both Company Name and ABN to get the logo
             logo_url = get_company_logo_static(company["Company Name"], abn)
