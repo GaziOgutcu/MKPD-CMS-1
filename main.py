@@ -681,7 +681,7 @@ def view_company():
                 return redirect(url_for("view_company"))
 
             # Filter the DataFrame to find the selected company
-            company = df[df["Company Name"].str.strip().str.lower() == selected_company.strip().lower()]
+            company = df[df["Company Name"].str.strip().str.casefold() == selected_company.strip().casefold()]
             if company.empty:
                 flash("Company not found.", "error")
                 return redirect(url_for("view_company"))
