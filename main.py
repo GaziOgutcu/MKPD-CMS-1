@@ -729,7 +729,14 @@ def view_company():
                 logo_url=logo_url
             )
 
-        return render_template("view_company.html", title="View Companies", companies=companies)
+        return render_template(
+            "company_details.html",
+            title="Company Details",
+            company=company,
+            documents=documents,
+            logo_url=get_company_logo_static(company["Company Name"], abn),  # ✅ Fix here
+        )
+
 
     except Exception as e:
         app.logger.error(f"Error loading companies: {e}")
