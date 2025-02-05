@@ -664,10 +664,10 @@ def add_company():
 @login_required
 def view_company():
     try:
-        # Ensure the Excel file exists
-        if not os.path.exists(EXCEL_FILE):
-            flash("No company data file found!", "error")
-            return redirect(url_for("add_company"))
+        print(f"✅ Checking if get_company_logo_static is defined: {get_company_logo_static}")  # Debugging
+
+        if not callable(get_company_logo_static):  # Check if the function exists
+            raise ValueError("get_company_logo_static is not defined or not callable")
 
         # Load company data from the Excel file
         df = pd.read_excel(EXCEL_FILE, engine="openpyxl", dtype={"QBCC License Number": str})
@@ -675,16 +675,12 @@ def view_company():
             flash("No companies found. Please add a company first.", "info")
             return redirect(url_for("add_company"))
 
-        # Convert company data to a list of dictionaries for rendering
         companies = df.to_dict(orient="records")
-
-        # ✅ Initialize variables to prevent "NoneType is not subscriptable" error
         company = None
         documents = {}
         logo_url = url_for("static", filename="NO LOGO AVAILABLE.png")  # Default logo
 
         if request.method == "POST":
-            # Get the selected company name from the form
             selected_company = request.form.get("company_name")
             print(f"📌 Selected company from form: {selected_company}")  # Debugging
 
@@ -692,7 +688,6 @@ def view_company():
                 flash("Please select a company.", "error")
                 return redirect(url_for("view_company"))
 
-            # Filter the DataFrame to find the selected company
             company_data = df[df["Company Name"].str.strip().str.lower() == selected_company.strip().lower()]
             print(f"🔍 Matching companies found: {company_data}")  # Debugging
 
@@ -700,43 +695,38 @@ def view_company():
                 flash("Company not found.", "error")
                 return redirect(url_for("view_company"))
 
-            # Convert the first matching row to a dictionary
             company = company_data.iloc[0].to_dict()
-
-            # ✅ Ensure company is not None before accessing its fields
             if not company:
                 flash("Company data could not be retrieved.", "error")
                 return redirect(url_for("view_company"))
 
-            abn = str(company.get("ABN", "")).strip()  # Convert to string safely
+            abn = str(company.get("ABN", "")).strip()
 
-            # ✅ Get company logo
+            # ✅ Ensure the function is defined before calling it
             logo_url = get_company_logo_static(company["Company Name"], abn)
 
-            # Validate the Documents folder
             folder_name = company.get("Documents")
             if folder_name:
                 folder_path = os.path.join(MAIN_DIR, folder_name)
                 if os.path.exists(folder_path):
-                    # Retrieve available documents
                     documents = {
                         doc: doc for doc in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, doc))
                     }
 
-        # ✅ Render the company details page correctly
         return render_template(
             "company_details.html",
             title="Company Details",
-            company=company if company else {},  # ✅ Ensures it never passes None
+            company=company if company else {},
             documents=documents,
             logo_url=logo_url,
-            companies=companies,  # ✅ Ensures dropdown works
+            companies=companies,
         )
 
     except Exception as e:
         app.logger.error(f"Error loading companies: {e}")
         flash(f"Error loading companies: {e}", "error")
         return redirect(url_for("index"))
+
 
 
 
@@ -832,6 +822,7 @@ def view_project(project_name):
 
 
 
+
 def get_company_logo_static(company_name, abn):
     """Return the correct logo URL or the default image if missing."""
     for ext in ["png", "jpg", "jpeg"]:
@@ -840,6 +831,7 @@ def get_company_logo_static(company_name, abn):
             return url_for("static", filename=f"{company_name}_{abn}.{ext}")
     
     return url_for("static", filename="NO LOGO AVAILABLE.png")  # Default image
+
 
 
 
