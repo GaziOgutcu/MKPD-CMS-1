@@ -679,25 +679,30 @@ def view_company():
         companies = df.to_dict(orient="records")
 
         if request.method == "POST":
+            # Get the selected company name from the form
             selected_company = request.form.get("company_name")
-            print(f"📌 Selected company from form: {selected_company}")  # ✅ Debugging Step
+            print(f"📌 Selected company from form: {selected_company}")  # Debugging
 
             if not selected_company:
                 flash("Please select a company.", "error")
                 return redirect(url_for("view_company"))
 
+            # Filter the DataFrame to find the selected company
             company = df[df["Company Name"].str.strip().str.lower() == selected_company.strip().lower()]
-            print(f"🔍 Matching companies found: {company}")  # ✅ Debugging Step
+            print(f"🔍 Matching companies found: {company}")  # Debugging
 
             if company.empty:
                 flash("Company not found.", "error")
                 return redirect(url_for("view_company"))
 
-
-            # Get the first matching company as a dictionary
+            # Convert the first matching row to a dictionary
             company = company.iloc[0].to_dict()
+            abn = company.get("ABN", "").strip()  # ✅ Extract ABN
 
-            # Validate the Documents field
+            # ✅ Pass both Company Name and ABN to get the logo
+            logo_url = get_company_logo_static(company["Company Name"], abn)
+
+            # Validate the Documents folder
             folder_name = company.get("Documents")
             if not folder_name:
                 flash("Document folder not specified for this company.", "error")
@@ -709,15 +714,12 @@ def view_company():
                 flash("Document folder does not exist.", "error")
                 return redirect(url_for("view_company"))
 
-            # Determine the URL for the company logo in the static folder
-            logo_url = get_company_logo_static(folder_name)
-
-            # Retrieve all documents in the company's folder
+            # Retrieve available documents
             documents = {
                 doc: doc for doc in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, doc))
             }
 
-            # Render the company details template with the logo and documents
+            # ✅ Render company details with correct logo
             return render_template(
                 "company_details.html",
                 title="Company Details",
@@ -726,13 +728,13 @@ def view_company():
                 logo_url=logo_url
             )
 
-        # Render the view company template with the list of companies
         return render_template("view_company.html", title="View Companies", companies=companies)
 
     except Exception as e:
         app.logger.error(f"Error loading companies: {e}")
         flash(f"Error loading companies: {e}", "error")
         return redirect(url_for("index"))
+
 
 
 @app.route("/add_project", methods=["GET", "POST"])
