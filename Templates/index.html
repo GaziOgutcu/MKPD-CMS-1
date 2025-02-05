@@ -5,14 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MKPD CMS</title>
 
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Custom CSS -->
-    <<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+    <!-- Navbar -->
+    <div id="navbar-placeholder"></div>
 
     <!-- Welcome Text Section -->
     <div class="text-center my-4">
@@ -25,7 +27,6 @@
     <!-- Dashboard Container -->
     <div class="container mt-5">
         <div class="row g-4">
-
             <!-- News Section -->
             <div class="col-lg-4 col-md-6">
                 <div class="card dashboard-card news-card shadow h-100">
@@ -44,7 +45,6 @@
                                 </li>
                                 {% endfor %}
                             </ul>
-
                             <!-- Pagination -->
                             <nav aria-label="News pagination">
                                 <ul class="pagination justify-content-center mt-3">
@@ -98,7 +98,6 @@
                             <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
                         {% endif %}
                     </div>
-
                     <!-- Company Info -->
                     <div class="card-body">
                         <div class="mb-2 d-flex justify-content-between align-items-center">
@@ -114,7 +113,6 @@
                             <button class="btn-96" onclick="copyToClipboard('676847242', 'Harm Drive ACN')"><span>Copy</span></button>
                         </div>
                     </div>
-
                     <!-- Renew Registration Button -->
                     <div class="text-center p-3">
                         <a href="https://www.service.transport.qld.gov.au/tmrauthentication/public/Login.xhtml?serviceName=RenewRegistrationMulti&qgovLoginSelected=N&entryPage=/application/Entry.xhtml&exitPage=/public/Farewell.xhtml&executionContext=qt&preferredIaal2Option=&dswid=-9947"
@@ -156,7 +154,6 @@
                             <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
                         {% endif %}
                     </div>
-
                     <!-- Add Vehicle Button -->
                     <div class="text-center p-3">
                         <a href="{{ url_for('add_wahoo_vehicle') }}" class="cta">
@@ -165,92 +162,71 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer -->
+    <footer class="text-center mt-5">
+        <p class="small text-muted">&copy; 2024 Gazi OGUTCU. All rights reserved.</p>
+    </footer>
+
+    <!-- JavaScript to Load Navbar -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("/navbar") // Fetch the navbar.html file via Flask
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Navbar not found!");
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById("navbar-placeholder").innerHTML = data;
+                })
+                .catch(error => console.error("Error loading navbar:", error));
+        });
+    </script>
+
+    <!-- Copy to Clipboard Script -->
+    <script>
+        function copyToClipboard(text, label) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text)
+                    .then(() => showToast(`${label} copied to clipboard!`))
+                    .catch(err => console.error('Clipboard write failed: ', err));
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast(`${label} copied to clipboard!`);
+                } catch (err) {
+                    console.error('Fallback copy failed: ', err);
+                }
+                document.body.removeChild(textarea);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '20px';
+            toast.style.right = '20px';
+            toast.style.backgroundColor = '#28a745';
+            toast.style.color = '#fff';
+            toast.style.padding = '10px 15px';
+            toast.style.borderRadius = '5px';
+            toast.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+            toast.style.zIndex = '1000';
+            document.body.appendChild(toast);
+            setTimeout(() => document.body.removeChild(toast), 3000);
+        }
+    </script>
 
 </body>
 </html>
-
-
-
-
-<script>
-    // Copy to Clipboard Function
-    function copyToClipboard(text, label) {
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(text)
-                .then(() => {
-                    showToast(`${label} copied to clipboard!`);
-                })
-                .catch(err => {
-                    console.error('Clipboard write failed: ', err);
-                    alert('Failed to copy. Please try again.');
-                });
-        } else {
-            // Fallback for older browsers
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.style.position = 'fixed'; // Prevent scrolling
-            textarea.style.opacity = '0'; // Invisible to user
-            document.body.appendChild(textarea);
-            textarea.focus();
-            textarea.select();
-
-            try {
-                document.execCommand('copy');
-                showToast(`${label} copied to clipboard!`);
-            } catch (err) {
-                console.error('Fallback copy failed: ', err);
-                alert('Failed to copy. Please try again.');
-            }
-
-            document.body.removeChild(textarea);
-        }
-    }
-
-    // Toast Notification Function
-    function showToast(message) {
-        const toast = document.createElement('div');
-        toast.textContent = message;
-        toast.style.position = 'fixed';
-        toast.style.bottom = '20px';
-        toast.style.right = '20px';
-        toast.style.backgroundColor = '#28a745';
-        toast.style.color = '#fff';
-        toast.style.padding = '10px 15px';
-        toast.style.borderRadius = '5px';
-        toast.style.zIndex = '1000';
-        toast.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-        document.body.appendChild(toast);
-
-        setTimeout(() => {
-            document.body.removeChild(toast);
-        }, 3000);
-    }
-</script>
-
-<!-- Footer -->
-<div class="text-center mt-5">
-    <p class="small text-muted">&copy; 2024 Gazi OGUTCU. All rights reserved.</p>
-</div>
-
-<!-- ✅ JavaScript to Load Navbar -->
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch("/navbar") // Fetch the navbar.html file via Flask
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Navbar not found!");
-                }
-                return response.text();
-            })
-            .then(data => {
-                document.getElementById("navbar-placeholder").innerHTML = data;
-            })
-            .catch(error => console.error("Error loading navbar:", error));
-    });
-</script>
