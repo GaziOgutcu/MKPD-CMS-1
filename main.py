@@ -723,9 +723,9 @@ def view_company():
             title="Company Details",
             company=company,
             documents=documents,
-            logo_url=logo_url,
-            companies=companies,  # ✅ Ensures dropdown works
+            logo_url=get_company_logo_static(company["Company Name"], abn),
         )
+
 
     except Exception as e:
         app.logger.error(f"Error loading companies: {e}")
@@ -833,6 +833,8 @@ def get_company_logo_static(company_name, abn):
             return url_for("static", filename=f"{company_name}_{abn}.{ext}")
     
     return url_for("static", filename="NO LOGO AVAILABLE.png")  # Default image
+
+
 
 
 @app.route("/download/<path:filename>")
