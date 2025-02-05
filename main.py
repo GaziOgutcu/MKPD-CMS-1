@@ -678,6 +678,11 @@ def view_company():
         # Convert company data to a list of dictionaries for rendering
         companies = df.to_dict(orient="records")
 
+        # ✅ Initialize variables to prevent "local variable referenced before assignment" error
+        company = None
+        documents = {}
+        logo_url = url_for("static", filename="NO LOGO AVAILABLE.png")  # Default logo
+
         if request.method == "POST":
             # Get the selected company name from the form
             selected_company = request.form.get("company_name")
@@ -688,55 +693,39 @@ def view_company():
                 return redirect(url_for("view_company"))
 
             # Filter the DataFrame to find the selected company
-            company = df[df["Company Name"].str.strip().str.lower() == selected_company.strip().lower()]
-            print(f"🔍 Matching companies found: {company}")  # Debugging
+            company_data = df[df["Company Name"].str.strip().str.lower() == selected_company.strip().lower()]
+            print(f"🔍 Matching companies found: {company_data}")  # Debugging
 
-            if company.empty:
+            if company_data.empty:
                 flash("Company not found.", "error")
                 return redirect(url_for("view_company"))
 
             # Convert the first matching row to a dictionary
-            company = company.iloc[0].to_dict()
+            company = company_data.iloc[0].to_dict()
             abn = str(company.get("ABN", "")).strip()  # ✅ Convert to string first
 
-
-            # ✅ Pass both Company Name and ABN to get the logo
+            # ✅ Get company logo
             logo_url = get_company_logo_static(company["Company Name"], abn)
 
             # Validate the Documents folder
             folder_name = company.get("Documents")
-            if not folder_name:
-                flash("Document folder not specified for this company.", "error")
-                return redirect(url_for("view_company"))
+            if folder_name:
+                folder_path = os.path.join(MAIN_DIR, folder_name)
+                if os.path.exists(folder_path):
+                    # Retrieve available documents
+                    documents = {
+                        doc: doc for doc in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, doc))
+                    }
 
-            # Validate the folder path
-            folder_path = os.path.join(MAIN_DIR, folder_name)
-            if not os.path.exists(folder_path):
-                flash("Document folder does not exist.", "error")
-                return redirect(url_for("view_company"))
-
-            # Retrieve available documents
-            documents = {
-                doc: doc for doc in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, doc))
-            }
-
-            # ✅ Render company details with correct logo
-            return render_template(
-                "company_details.html",
-                title="Company Details",
-                company=company,
-                documents=documents,
-                logo_url=logo_url
-            )
-
+        # ✅ Render the company details page correctly
         return render_template(
             "company_details.html",
             title="Company Details",
             company=company,
             documents=documents,
-            logo_url=get_company_logo_static(company["Company Name"], abn),  # ✅ Fix here
+            logo_url=logo_url,
+            companies=companies,  # ✅ Ensures dropdown works
         )
-
 
     except Exception as e:
         app.logger.error(f"Error loading companies: {e}")
