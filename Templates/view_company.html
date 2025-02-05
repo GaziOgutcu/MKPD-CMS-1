@@ -28,17 +28,16 @@
         <h1 class="text-center text-primary mb-4">View Company Details</h1>
         <form method="POST" class="p-4 border rounded shadow-sm bg-white">
             <!-- Dropdown for Companies -->
-            <form method="POST" action="{{ url_for('view_company') }}">
-                <label for="company_name">Select a Company:</label>
-                <select name="company_name" id="company_name">
-                    <option value="">-- Select --</option>
+            <div class="mb-3">
+                <label for="company_name" class="form-label">Select a Company</label>
+                <select name="company_name" id="company_name" class="form-select" required>
+                    <option value="" disabled selected>Select a company</option>
                     {% for company in companies %}
                         <option value="{{ company['Company Name'] }}">{{ company['Company Name'] }}</option>
                     {% endfor %}
                 </select>
-                <button type="submit">View Details</button>
-            </form>
-            
+                <div class="form-text">Choose a company to view its details.</div>
+            </div>
 
             <!-- Action Buttons -->
             <div class="d-flex justify-content-between">

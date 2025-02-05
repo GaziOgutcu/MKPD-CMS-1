@@ -674,17 +674,20 @@ def view_company():
         companies = df.to_dict(orient="records")
 
         if request.method == "POST":
-            # Get the selected company name from the form
-            selected_company = request.form.get("company_name")
-            if not selected_company:
-                flash("Please select a company.", "error")
-                return redirect(url_for("view_company"))
+        selected_company = request.form.get("company_name")
+        print(f"📌 Selected company from form: {selected_company}")  # ✅ Debugging Step
 
-            # Filter the DataFrame to find the selected company
-            company = df[df["Company Name"].str.strip().str.casefold() == selected_company.strip().casefold()]
-            if company.empty:
-                flash("Company not found.", "error")
-                return redirect(url_for("view_company"))
+        if not selected_company:
+            flash("Please select a company.", "error")
+            return redirect(url_for("view_company"))
+
+        company = df[df["Company Name"].str.strip().str.lower() == selected_company.strip().lower()]
+        print(f"🔍 Matching companies found: {company}")  # ✅ Debugging Step
+
+        if company.empty:
+            flash("Company not found.", "error")
+            return redirect(url_for("view_company"))
+
 
             # Get the first matching company as a dictionary
             company = company.iloc[0].to_dict()
