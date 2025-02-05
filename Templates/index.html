@@ -19,185 +19,188 @@
 
 
 
-<!-- Welcome Text Section -->
-<div class="text-center my-4">
-    <section class="welcome-text">
-        <h1>Welcome to MKPD CMS</h1>
-        <p>Your central hub for managing companies, vehicles, employees, and projects.</p>
-    </section>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MKPD CMS - Dashboard</title>
 
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<div class="container mt-5">
-    <div class="row">
-        <!-- Framed News Section -->
-        <div class="col-md-6">
-            <div class="card dashboard-card news-card shadow">
-                <div class="card-header bg-primary text-white text-center">
-                    <h3 class="mb-0">Latest Construction News</h3>
-                </div>
-                <div class="card-body">
-                    {% if news_items %}
-                        <ul class="list-unstyled">
-                            {% for news in news_items %}
-                            <li class="mb-3 border-bottom pb-2">
-                                <a href="{{ news['url'] }}" target="_blank" class="text-decoration-none text-primary">
-                                    <strong>{{ news['title'] }}</strong>
-                                </a>
-                                <p class="small text-muted mb-0">Published: {{ news['publishedAt'] }}</p>
-                            </li>
-                            {% endfor %}
-                        </ul>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
 
-                        <!-- Pagination Controls -->
-                        <nav aria-label="News pagination">
-                            <ul class="pagination justify-content-center mt-3">
-                                {% if page > 1 %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page - 1 }}">Previous</a>
-                                </li>
-                                {% endif %}
+    <!-- Welcome Text Section -->
+    <div class="text-center my-4">
+        <section class="welcome-text">
+            <h1>Welcome to MKPD CMS</h1>
+            <p>Your central hub for managing companies, vehicles, employees, and projects.</p>
+        </section>
+    </div>
 
-                                {% for p in range(1, total_pages + 1) %}
-                                <li class="page-item {% if page == p %}active{% endif %}">
-                                    <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+    <!-- Dashboard Container -->
+    <div class="container mt-5">
+        <div class="row">
+
+            <!-- News Section -->
+            <div class="col-md-6">
+                <div class="card dashboard-card news-card shadow">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h3 class="mb-0">Latest Construction News</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if news_items %}
+                            <ul class="list-unstyled">
+                                {% for news in news_items %}
+                                <li class="mb-3 border-bottom pb-2">
+                                    <a href="{{ news['url'] }}" target="_blank" class="text-decoration-none text-primary">
+                                        <strong>{{ news['title'] }}</strong>
+                                    </a>
+                                    <p class="small text-muted mb-0">Published: {{ news['publishedAt'] }}</p>
                                 </li>
                                 {% endfor %}
-
-                                {% if page < total_pages %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ page + 1 }}">Next</a>
-                                </li>
-                                {% endif %}
                             </ul>
-                        </nav>
-                    {% else %}
-                        <p class="text-center text-muted">No recent news available.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
 
-        <!-- Framed Vehicles Section -->
-        <div class="col-md-6">
-            <div class="card dashboard-card vehicles-card shadow">
-                <div class="card-header bg-danger text-white text-center">
-                    <h3 class="mb-0">Vehicles with Soon-to-Expire Rego</h3>
-                </div>
-
-                <!-- Card Body: Table Section -->
-                <div class="card-body">
-                    {% if vehicles and vehicles|length > 0 %}
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Plate</th>
-                                        <th>Type</th>
-                                        <th>Expiry (Days)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for vehicle in vehicles %}
-                                    <tr>
-                                        <td>{{ vehicle['Plate'] }}</td>
-                                        <td>{{ vehicle['Type'] }}</td>
-                                        <td class="text-danger">{{ vehicle['Expiry'] }} Days</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
-                    {% endif %}
-                </div>
-
-                <!-- Company Information with Copy Buttons -->
-                <div class="card-body">
-                    <div class="mb-2 d-flex justify-content-between align-items-center">
-                        <span><strong>Harm Drive CRN:</strong> <span id="crn">142123141</span></span>
-                        <button class="btn-96" onclick="copyToClipboard('142123141', 'Harm Drive CRN')"><span>Copy</span></button>
-                    </div>
-                    <div class="mb-2 d-flex justify-content-between align-items-center">
-                        <span><strong>Company Name:</strong> <span id="company">Harm Drive Pty Ltd</span></span>
-                        <button class="btn-96" onclick="copyToClipboard('Harm Drive Pty Ltd', 'Company Name')"><span>Copy</span></button>
-                    </div>
-                    <div class="mb-2 d-flex justify-content-between align-items-center">
-                        <span><strong>Harm Drive ACN:</strong> <span id="abn">676847242</span></span>
-                        <button class="btn-96" onclick="copyToClipboard('676847242', 'Harm Drive ACN')"><span>Copy</span></button>
-                    </div>
-                </div>
-
-                <!-- Renew Registration Button -->
-                <div class="text-center p-3">
-                    <a href="https://www.service.transport.qld.gov.au/tmrauthentication/public/Login.xhtml?serviceName=RenewRegistrationMulti&qgovLoginSelected=N&entryPage=/application/Entry.xhtml&exitPage=/public/Farewell.xhtml&executionContext=qt&preferredIaal2Option=&dswid=-9947"
-                        target="_blank"
-                        class="cta">
-                        <span>Renew Registration</span>
-                        <svg width="15px" height="10px" viewBox="0 0 13 10">
-                            <path d="M1,5 L11,5"></path>
-                            <polyline points="8 1 12 5 8 9"></polyline>
-                        </svg>
-                    </a>
-                </div>
-
-                <div class="container mt-5">
-                    <div class="row">
-                        <!-- Wahoo Pool Vehicles Section -->
-                        <div class="col-md-6">
-                            <div class="card dashboard-card wahoo-vehicles-card shadow">
-                                <div class="card-header bg-success text-white text-center">
-                                    <h3 class="mb-0">Wahoo Pool Construction Vehicles</h3>
-                                </div>
-                
-                                <!-- Card Body: Table Section -->
-                                <div class="card-body">
-                                    {% if wahoo_vehicles and wahoo_vehicles|length > 0 %}
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered table-hover">
-                                                <thead class="table-dark">
-                                                    <tr>
-                                                        <th>Plate</th>
-                                                        <th>Type</th>
-                                                        <th>Expiry (Days)</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for vehicle in wahoo_vehicles %}
-                                                    <tr>
-                                                        <td>{{ vehicle['Plate'] }}</td>
-                                                        <td>{{ vehicle['Type'] }}</td>
-                                                        <td class="text-danger">{{ vehicle['Expiry'] }} Days</td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    {% else %}
-                                        <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
+                            <!-- Pagination -->
+                            <nav aria-label="News pagination">
+                                <ul class="pagination justify-content-center mt-3">
+                                    {% if page > 1 %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ page - 1 }}">Previous</a></li>
                                     {% endif %}
-                                </div>
-                
-                                <!-- Add Vehicle Button -->
-                                <div class="text-center p-3">
-                                    <a href="{{ url_for('add_wahoo_vehicle') }}" class="cta">
-                                        <span>Add Vehicle</span>
-                                        <svg width="15px" height="10px" viewBox="0 0 13 10">
-                                            <path d="M1,5 L11,5"></path>
-                                            <polyline points="8 1 12 5 8 9"></polyline>
-                                        </svg>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+
+                                    {% for p in range(1, total_pages + 1) %}
+                                    <li class="page-item {% if page == p %}active{% endif %}">
+                                        <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                                    </li>
+                                    {% endfor %}
+
+                                    {% if page < total_pages %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ page + 1 }}">Next</a></li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% else %}
+                            <p class="text-center text-muted">No recent news available.</p>
+                        {% endif %}
                     </div>
                 </div>
-                    
             </div>
+
+            <!-- Vehicles Section -->
+            <div class="col-md-6">
+                <div class="card dashboard-card vehicles-card shadow">
+                    <div class="card-header bg-danger text-white text-center">
+                        <h3 class="mb-0">Vehicles with Soon-to-Expire Rego</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if vehicles and vehicles|length > 0 %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Plate</th>
+                                            <th>Type</th>
+                                            <th>Expiry (Days)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for vehicle in vehicles %}
+                                        <tr>
+                                            <td>{{ vehicle['Plate'] }}</td>
+                                            <td>{{ vehicle['Type'] }}</td>
+                                            <td class="text-danger">{{ vehicle['Expiry'] }} Days</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Company Info -->
+                    <div class="card-body">
+                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <span><strong>Harm Drive CRN:</strong> <span id="crn">142123141</span></span>
+                            <button class="btn-96" onclick="copyToClipboard('142123141', 'Harm Drive CRN')"><span>Copy</span></button>
+                        </div>
+                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <span><strong>Company Name:</strong> <span id="company">Harm Drive Pty Ltd</span></span>
+                            <button class="btn-96" onclick="copyToClipboard('Harm Drive Pty Ltd', 'Company Name')"><span>Copy</span></button>
+                        </div>
+                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <span><strong>Harm Drive ACN:</strong> <span id="abn">676847242</span></span>
+                            <button class="btn-96" onclick="copyToClipboard('676847242', 'Harm Drive ACN')"><span>Copy</span></button>
+                        </div>
+                    </div>
+
+                    <!-- Renew Registration Button -->
+                    <div class="text-center p-3">
+                        <a href="https://www.service.transport.qld.gov.au/tmrauthentication/public/Login.xhtml?serviceName=RenewRegistrationMulti&qgovLoginSelected=N&entryPage=/application/Entry.xhtml&exitPage=/public/Farewell.xhtml&executionContext=qt&preferredIaal2Option=&dswid=-9947"
+                            target="_blank"
+                            class="cta">
+                            <span>Renew Registration</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wahoo Pool Vehicles Section -->
+            <div class="col-md-6 mt-4">
+                <div class="card dashboard-card wahoo-vehicles-card shadow">
+                    <div class="card-header bg-success text-white text-center">
+                        <h3 class="mb-0">Wahoo Pool Construction Vehicles</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if wahoo_vehicles and wahoo_vehicles|length > 0 %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Plate</th>
+                                            <th>Type</th>
+                                            <th>Expiry (Days)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for vehicle in wahoo_vehicles %}
+                                        <tr>
+                                            <td>{{ vehicle['Plate'] }}</td>
+                                            <td>{{ vehicle['Type'] }}</td>
+                                            <td class="text-danger">{{ vehicle['Expiry'] }} Days</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Add Vehicle Button -->
+                    <div class="text-center p-3">
+                        <a href="{{ url_for('add_wahoo_vehicle') }}" class="cta">
+                            <span>Add Vehicle</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
-</div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+
 
 
 
