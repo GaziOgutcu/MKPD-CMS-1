@@ -141,6 +141,59 @@
                         </svg>
                     </a>
                 </div>
+
+                <div class="container mt-5">
+                    <div class="row">
+                        <!-- Wahoo Pool Vehicles Section -->
+                        <div class="col-md-6">
+                            <div class="card dashboard-card wahoo-vehicles-card shadow">
+                                <div class="card-header bg-success text-white text-center">
+                                    <h3 class="mb-0">Wahoo Pool Construction Vehicles</h3>
+                                </div>
+                
+                                <!-- Card Body: Table Section -->
+                                <div class="card-body">
+                                    {% if wahoo_vehicles and wahoo_vehicles|length > 0 %}
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-hover">
+                                                <thead class="table-dark">
+                                                    <tr>
+                                                        <th>Plate</th>
+                                                        <th>Type</th>
+                                                        <th>Expiry (Days)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for vehicle in wahoo_vehicles %}
+                                                    <tr>
+                                                        <td>{{ vehicle['Plate'] }}</td>
+                                                        <td>{{ vehicle['Type'] }}</td>
+                                                        <td class="text-danger">{{ vehicle['Expiry'] }} Days</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
+                                    {% endif %}
+                                </div>
+                
+                                <!-- Add Vehicle Button -->
+                                <div class="text-center p-3">
+                                    <a href="{{ url_for('add_wahoo_vehicle') }}" class="cta">
+                                        <span>Add Vehicle</span>
+                                        <svg width="15px" height="10px" viewBox="0 0 13 10">
+                                            <path d="M1,5 L11,5"></path>
+                                            <polyline points="8 1 12 5 8 9"></polyline>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    
             </div>
         </div>
     </div>

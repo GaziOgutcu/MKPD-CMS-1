@@ -24,6 +24,10 @@ HARM_DRIVE_FILE = 'HarmDriveData.xlsx'
 PROJECTS_FILE = "projects.xlsx"
 PROJECT_IMAGES_DIR = os.path.join("static", "project_images")
 
+# File path for Wahoo Pool Vehicles
+WAHOO_VEHICLES_FILE = "wahoo_vehicles.xlsx"
+
+
 if not os.path.exists(PROJECT_IMAGES_DIR):
     os.makedirs(PROJECT_IMAGES_DIR)
 
@@ -446,6 +450,52 @@ def delete_vehicle():
     except Exception as e:
         flash(f"Error deleting vehicle: {e}", "error")
     return redirect(url_for("harm_drive"))
+
+
+# Ensure the Wahoo Vehicles file exists
+def setup_wahoo_vehicles_file():
+    if not os.path.exists(WAHOO_VEHICLES_FILE):
+        columns = ["Plate", "Type", "Expiry"]
+        pd.DataFrame(columns=columns).to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
+
+setup_wahoo_vehicles_file()
+
+# Route to display Wahoo Pool Vehicles
+@app.route("/wahoo_vehicles")
+@login_required
+def wahoo_vehicles():
+    try:
+        df = pd.read_excel(WAHOO_VEHICLES_FILE, engine="openpyxl")
+        wahoo_vehicles_list = df.to_dict(orient="records")
+    except Exception as e:
+        flash(f"Error loading Wahoo Vehicles data: {e}", "error")
+        wahoo_vehicles_list = []
+
+    return render_template("dashboard.html", wahoo_vehicles=wahoo_vehicles_list)
+
+# Route to add a new Wahoo Pool Vehicle
+@app.route("/add_wahoo_vehicle", methods=["GET", "POST"])
+@login_required
+def add_wahoo_vehicle():
+    if request.method == "POST":
+        try:
+            plate = request.form["plate"].strip()
+            type_ = request.form["type"].strip()
+            expiry = int(request.form["expiry"].strip())
+
+            new_vehicle = {"Plate": plate, "Type": type_, "Expiry": expiry}
+
+            df = pd.read_excel(WAHOO_VEHICLES_FILE, engine="openpyxl")
+            df = pd.concat([df, pd.DataFrame([new_vehicle])], ignore_index=True)
+            df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
+
+            flash("Wahoo Pool Vehicle added successfully!", "success")
+            return redirect(url_for("wahoo_vehicles"))
+
+        except Exception as e:
+            flash(f"Error adding Wahoo Vehicle: {e}", "error")
+
+    return render_template("add_wahoo_vehicle.html")
 
 
 
