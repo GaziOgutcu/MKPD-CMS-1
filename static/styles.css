@@ -366,22 +366,20 @@
 /* ===================== */
 
 .button44 {
-    --color: #00A97F;
-    padding: 0.8em 1.7em;
-    background-color: transparent;
-    border-radius: .3em;
-    position: relative;
-    overflow: hidden;
+    display: inline-block;
+    text-decoration: none; /* Removes underline */
+    color: #ffffff; /* White text */
+    background-color: #28a745; /* Green background */
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     cursor: pointer;
-    transition: .5s;
-    font-weight: 400;
-    font-size: 17px;
-    border: 1px solid;
-    font-family: inherit;
-    text-transform: uppercase;
-    color: var(--color);
-    z-index: 1;
-   }
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
    
    .button44::before, .button44::after {
     content: '';
@@ -412,12 +410,15 @@
    }
    
    .button44:hover {
-    color: rgb(10, 25, 30);
-   }
+    background-color: #218838; /* Darker green on hover */
+    transform: scale(1.05); /* Slight zoom on hover */
+    text-decoration: none; /* Ensure no underline on hover */
+}
    
-   .button44:active {
-    filter: brightness(.8);
-   }
+    .button44:active {
+        transform: scale(1); /* Reset zoom when active */
+        background-color: #1e7e34; /* Even darker green */
+    }
    
 
 /* ===================== */
