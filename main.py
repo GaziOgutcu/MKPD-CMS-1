@@ -826,13 +826,15 @@ def view_project(project_name):
 
 
 
-def get_company_logo_static(folder_name):
-    """Return the URL for the company logo in the static folder, or a default image if not found."""
-    logo_path = os.path.join("static", f"{folder_name}.png")
-    if os.path.exists(logo_path):
-        return url_for("static", filename=f"{folder_name}.png")
-    else:
-        return url_for("static", filename="NO LOGO AVAILABLE.png")
+def get_company_logo_static(company_name, abn):
+    """Return the correct logo URL or the default image if missing."""
+    for ext in ["png", "jpg", "jpeg"]:
+        logo_path = os.path.join("static", f"{company_name}_{abn}.{ext}")
+        if os.path.exists(logo_path):
+            return url_for("static", filename=f"{company_name}_{abn}.{ext}")
+    
+    return url_for("static", filename="NO LOGO AVAILABLE.png")  # Default image
+
 
 @app.route("/download/<path:filename>")
 @login_required
