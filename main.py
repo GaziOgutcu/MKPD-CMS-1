@@ -575,7 +575,7 @@ def add_employee():
 def add_company():
     try:
         if request.method == "POST":
-            # ✅ Collect data from the form
+            # Collect data from the form
             company_name = request.form["company_name"].strip()
             registration_date = request.form["registration_date"].strip()
             abn = request.form["abn"].strip()
@@ -584,50 +584,47 @@ def add_company():
             registered_address = request.form.get("registered_address", "").strip()
             qbcc_license_number = request.form.get("qbcc_license_number", "").strip()
 
-            # ✅ Validate required fields
+            # Validate required fields
             if not company_name or not abn:
                 flash("Company Name and ABN are required!", "error")
                 return redirect(url_for("add_company"))
 
-            # ✅ Ensure ABN is a valid 11-digit number
+            # Validate ABN format
             import re
             if not re.match(r'^\d{11}$', abn):
                 flash("Invalid ABN format. It must be 11 digits.", "error")
                 return redirect(url_for("add_company"))
 
-            # ✅ Create a unique folder in `CompanyFolders/`
-            folder_name = f"{company_name}_{abn}"
+            # Create a unique folder for the company
+            folder_name = secure_filename(f"{company_name}_{abn}")
             folder_path = os.path.join(MAIN_DIR, folder_name)
             os.makedirs(folder_path, exist_ok=True)
 
-            # ✅ Handle ASIC Extract upload (Mandatory)
+            # Handle mandatory ASIC Extract upload
             asic_extract = request.files.get("asic_extract")
             if not asic_extract or not allowed_file(asic_extract.filename):
                 flash("ASIC Extract is required and must be a valid file!", "error")
                 return redirect(url_for("add_company"))
             asic_extract.save(os.path.join(folder_path, secure_filename(asic_extract.filename)))
 
-            # ✅ Handle optional document uploads (Company Registration, Logo)
-            for field_name in ["company_registration"]:
+            # Handle optional document uploads
+            for field_name in ["company_registration", "logo"]:
                 file = request.files.get(field_name)
                 if file and allowed_file(file.filename):
-                    file.save(os.path.join(folder_path, secure_filename(file.filename)))
+                    saved_path = os.path.join(folder_path, secure_filename(file.filename))
+                    file.save(saved_path)
+                    app.logger.info(f"Saved {field_name} to {saved_path}")
 
-            # ✅ Handle the Company Logo Upload (Save to `static/`)
-            logo = request.files.get("logo")
-            if logo and allowed_file(logo.filename):
-                ext = logo.filename.rsplit(".", 1)[1].lower()
-                logo_filename = f"{company_name}_{abn}.{ext}"
-                logo.save(os.path.join("static", logo_filename))
-
-            # ✅ Save the company details to `CompanyData.xlsx`
+            # Update the Excel file
             if not os.path.exists(EXCEL_FILE):
                 flash("Company data file not found. Please create the file first.", "error")
                 return redirect(url_for("add_company"))
 
             df = pd.read_excel(EXCEL_FILE, engine="openpyxl")
+            if "Company Name" not in df.columns or "ABN" not in df.columns:
+                flash("Missing required columns in the data file.", "error")
+                return redirect(url_for("add_company"))
 
-            # Prevent duplicates
             if any((df["Company Name"] == company_name) & (df["ABN"] == abn)):
                 flash("A company with this name and ABN already exists!", "error")
                 return redirect(url_for("add_company"))
@@ -648,6 +645,7 @@ def add_company():
             flash("Company added successfully!", "success")
             return redirect(url_for("view_company"))
 
+        # Render the Add Company form
         return render_template("add_company.html", title="Add Company")
 
     except Exception as e:
@@ -657,17 +655,14 @@ def add_company():
 
 
 
-
-
-
 @app.route("/view_company", methods=["GET", "POST"])
 @login_required
 def view_company():
     try:
-        print(f"✅ Checking if get_company_logo_static is defined: {get_company_logo_static}")  # Debugging
-
-        if not callable(get_company_logo_static):  # Check if the function exists
-            raise ValueError("get_company_logo_static is not defined or not callable")
+        # Ensure the Excel file exists
+        if not os.path.exists(EXCEL_FILE):
+            flash("No company data file found!", "error")
+            return redirect(url_for("add_company"))
 
         # Load company data from the Excel file
         df = pd.read_excel(EXCEL_FILE, engine="openpyxl", dtype={"QBCC License Number": str})
@@ -675,60 +670,64 @@ def view_company():
             flash("No companies found. Please add a company first.", "info")
             return redirect(url_for("add_company"))
 
+        # Convert company data to a list of dictionaries for rendering
         companies = df.to_dict(orient="records")
-        company = None
-        documents = {}
-        logo_url = url_for("static", filename="NO LOGO AVAILABLE.png")  # Default logo
 
         if request.method == "POST":
             selected_company = request.form.get("company_name")
-            print(f"📌 Selected company from form: {selected_company}")  # Debugging
+            print(f"📌 Selected company from form: {selected_company}")  # ✅ Debugging Step
 
             if not selected_company:
                 flash("Please select a company.", "error")
                 return redirect(url_for("view_company"))
 
-            company_data = df[df["Company Name"].str.strip().str.lower() == selected_company.strip().lower()]
-            print(f"🔍 Matching companies found: {company_data}")  # Debugging
+            company = df[df["Company Name"].str.strip().str.lower() == selected_company.strip().lower()]
+            print(f"🔍 Matching companies found: {company}")  # ✅ Debugging Step
 
-            if company_data.empty:
+            if company.empty:
                 flash("Company not found.", "error")
                 return redirect(url_for("view_company"))
 
-            company = company_data.iloc[0].to_dict()
-            if not company:
-                flash("Company data could not be retrieved.", "error")
+
+            # Get the first matching company as a dictionary
+            company = company.iloc[0].to_dict()
+
+            # Validate the Documents field
+            folder_name = company.get("Documents")
+            if not folder_name:
+                flash("Document folder not specified for this company.", "error")
                 return redirect(url_for("view_company"))
 
-            abn = str(company.get("ABN", "")).strip()
+            # Validate the folder path
+            folder_path = os.path.join(MAIN_DIR, folder_name)
+            if not os.path.exists(folder_path):
+                flash("Document folder does not exist.", "error")
+                return redirect(url_for("view_company"))
 
-            # ✅ Ensure the function is defined before calling it
-            logo_url = get_company_logo_static(company["Company Name"], abn)
+            # Determine the URL for the company logo in the static folder
+            logo_url = get_company_logo_static(folder_name)
 
-            folder_name = company.get("Documents")
-            if folder_name:
-                folder_path = os.path.join(MAIN_DIR, folder_name)
-                if os.path.exists(folder_path):
-                    documents = {
-                        doc: doc for doc in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, doc))
-                    }
+            # Retrieve all documents in the company's folder
+            documents = {
+                doc: doc for doc in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, doc))
+            }
 
-        return render_template(
-            "company_details.html",
-            title="Company Details",
-            company=company if company else {},
-            documents=documents,
-            logo_url=logo_url,
-            companies=companies,
-        )
+            # Render the company details template with the logo and documents
+            return render_template(
+                "company_details.html",
+                title="Company Details",
+                company=company,
+                documents=documents,
+                logo_url=logo_url
+            )
+
+        # Render the view company template with the list of companies
+        return render_template("view_company.html", title="View Companies", companies=companies)
 
     except Exception as e:
         app.logger.error(f"Error loading companies: {e}")
         flash(f"Error loading companies: {e}", "error")
         return redirect(url_for("index"))
-
-
-
 
 
 @app.route("/add_project", methods=["GET", "POST"])
@@ -822,19 +821,13 @@ def view_project(project_name):
 
 
 
-
-def get_company_logo_static(company_name, abn):
-    """Return the correct logo URL or the default image if missing."""
-    for ext in ["png", "jpg", "jpeg"]:
-        logo_path = os.path.join("static", f"{company_name}_{abn}.{ext}")
-        if os.path.exists(logo_path):
-            return url_for("static", filename=f"{company_name}_{abn}.{ext}")
-    
-    return url_for("static", filename="NO LOGO AVAILABLE.png")  # Default image
-
-
-
-
+def get_company_logo_static(folder_name):
+    """Return the URL for the company logo in the static folder, or a default image if not found."""
+    logo_path = os.path.join("static", f"{folder_name}.png")
+    if os.path.exists(logo_path):
+        return url_for("static", filename=f"{folder_name}.png")
+    else:
+        return url_for("static", filename="NO LOGO AVAILABLE.png")
 
 @app.route("/download/<path:filename>")
 @login_required
