@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory, request, redirect, url_for, session, flash, send_file
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for, session, flash, send_file, jsonify
 import os
 import pandas as pd
 from werkzeug.utils import secure_filename
@@ -483,8 +483,8 @@ def add_wahoo_vehicle():
         expiry_date = request.form['expiry_date']
 
         # Load the existing Excel sheet or create a new DataFrame
-        if os.path.exists(WAHOO_VEHICLES_FIL):
-            df = pd.read_excel(WAHOO_VEHICLES_FIL)
+        if os.path.exists(WAHOO_VEHICLES_FILE):
+            df = pd.read_excel(WAHOO_VEHICLES_FILE)
         else:
             df = pd.DataFrame(columns=["Plate", "Type", "Expiry Date"])
 
@@ -493,7 +493,7 @@ def add_wahoo_vehicle():
         df = pd.concat([df, pd.DataFrame([new_vehicle])], ignore_index=True)
 
         # Save the updated DataFrame back to the Excel sheet
-        df.to_excel(WAHOO_VEHICLES_FIL, index=False)
+        df.to_excel(WAHOO_VEHICLES_FILE, index=False)
 
         # Optionally redirect to the same page or return success
         return jsonify({"success": True, "message": "Vehicle added successfully!"})
