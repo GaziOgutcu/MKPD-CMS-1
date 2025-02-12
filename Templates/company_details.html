@@ -61,10 +61,11 @@
                                     <td>{{ category }}</td>
                                     <td>{{ file_name }}</td>
                                     <td>
-                                        <a href="{{ url_for('download_file', filename=company['Documents'] + '/' + file_name) }}" 
-                                           class="btn btn-primary btn-sm">
-                                            <i class="bi bi-download"></i> Download
+                                        <a href="{{ url_for('download_file', company_folder=company['Documents'], filename=file_name) }}" 
+                                            class="btn btn-primary btn-sm">
+                                                <i class="bi bi-download"></i> Download
                                         </a>
+
                                     </td>
                                 </tr>
                             {% endfor %}

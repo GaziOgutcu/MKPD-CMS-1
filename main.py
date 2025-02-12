@@ -814,15 +814,23 @@ def get_company_logo_static(company_name, abn):
 
 
 
-@app.route("/download/<path:filename>")
+@app.route("/download/<path:company_folder>/<path:filename>")
 @login_required
-def download_file(filename):
+def download_file(company_folder, filename):
     try:
-        filepath = os.path.join(MAIN_DIR, filename)
+        # Construct the full file path inside the correct company folder
+        filepath = os.path.join(MAIN_DIR, company_folder, filename)
+
+        if not os.path.exists(filepath):
+            flash("File not found!", "error")
+            return redirect(url_for("view_company"))
+
         return send_file(filepath, as_attachment=True)
     except Exception as e:
         flash(f"Error downloading file: {e}", "error")
         return redirect(url_for("view_company"))
+
+
 
 if __name__ == "__main__":
     app.run
