@@ -810,15 +810,16 @@ def get_company_logo_static(company_name, abn):
     return url_for('static', filename="default_logo.png")  # Ensure this default logo exists
 
 
-@app.route("/download/<path:filename>")
-@login_required
-def download_file(filename):
-    try:
-        filepath = os.path.join(MAIN_DIR, filename)
-        return send_file(filepath, as_attachment=True)
-    except Exception as e:
-        flash(f"Error downloading file: {e}", "error")
-        return redirect(url_for("view_company"))
+@app.template_global()
+def get_company_logo_static(company_name, abn):
+    """Returns the static URL for a company logo or a default image."""
+    logo_filename = f"{company_name}_{abn}.png"  # Example: "ESOS PROPERTIES PTY LTD_123456789.png"
+    logo_path = os.path.join("static", "logos", logo_filename)
+
+    if os.path.exists(logo_path):
+        return url_for("static", filename=f"logos/{logo_filename}")
+    else:
+        return url_for("static", filename="default_logo.png")  # Ensure you have a default logo
 
 if __name__ == "__main__":
     app.run
