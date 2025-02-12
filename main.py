@@ -804,13 +804,17 @@ def view_project(project_name):
 @app.template_global()
 def get_company_logo_static(company_name, abn):
     """Returns the static URL for a company logo or a default image."""
-    logo_filename = f"{company_name}_{abn}.png"  # Example: "ESOS PROPERTIES PTY LTD_123456789.png"
+    logo_filename = f"{company_name.replace(' ', '_')}_{abn}.png"  # Replace spaces with underscores
     logo_path = os.path.join("static", "logos", logo_filename)
+
+    print(f"🔍 Checking for logo: {logo_path}")  # Debugging output
 
     if os.path.exists(logo_path):
         return url_for("static", filename=f"logos/{logo_filename}")
     else:
-        return url_for("static", filename="default_logo.png")  # Ensure you have a default logo
+        print(f"⚠️ Logo not found, using default logo.")  # Debugging output
+        return url_for("static", filename="default_logo.png")
+
 
 
 
