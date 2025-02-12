@@ -18,12 +18,10 @@
     <div id="navbar-placeholder"></div>
 
     <!-- ✅ Logo Section -->
-    <!-- ✅ Display Company Logo -->
-        <div class="container text-center my-4">
-            <img src="{{ get_company_logo_static(company['Company Name'], company['ABN']) }}" 
-                alt="Company Logo" class="img-fluid company-logo">
-        </div>
-
+    <div class="container text-center my-4">
+        <img src="{{ get_company_logo_static(company['Company Name'], company['ABN']) }}" 
+             alt="Company Logo" class="img-fluid company-logo">
+    </div>
 
     <!-- ✅ Company Details Section -->
     <div class="container py-5">
@@ -31,7 +29,7 @@
         <h1 class="text-center text-primary mb-4">Company Details</h1>
 
         <!-- General Information -->
-        <div class="details-container mb-4">
+        <div class="mb-4">
             <h3 class="mb-3">General Information</h3>
             <ul class="list-group">
                 <li class="list-group-item"><strong>Company Name:</strong> {{ company["Company Name"] }}</li>
@@ -45,7 +43,7 @@
         </div>
 
         <!-- Available Documents -->
-        <div class="details-container">
+        <div>
             <h3 class="mb-3">Available Documents</h3>
             {% if documents %}
                 <div class="table-responsive">
@@ -63,7 +61,8 @@
                                     <td>{{ category }}</td>
                                     <td>{{ file_name }}</td>
                                     <td>
-                                        <a href="{{ url_for('download_file', filename=company['Documents'] + '/' + file_name) }}" class="btn btn-primary btn-sm">
+                                        <a href="{{ url_for('download_file', filename=company['Documents'] + '/' + file_name) }}" 
+                                           class="btn btn-primary btn-sm">
                                             <i class="bi bi-download"></i> Download
                                         </a>
                                     </td>
@@ -93,15 +92,8 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             fetch("/navbar")
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Navbar file not found!");
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    document.getElementById("navbar-placeholder").innerHTML = data;
-                })
+                .then(response => response.text())
+                .then(data => document.getElementById("navbar-placeholder").innerHTML = data)
                 .catch(error => console.error("Error loading navbar:", error));
         });
     </script>
