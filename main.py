@@ -659,60 +659,40 @@ def add_company():
 @login_required
 def view_company():
     try:
-        # Ensure the Excel file exists
-        if not os.path.exists(EXCEL_FILE):
-            flash("No company data file found!", "error")
-            return redirect(url_for("add_company"))
-
-        # Load company data from the Excel file
         df = pd.read_excel(EXCEL_FILE, engine="openpyxl", dtype={"QBCC License Number": str})
         if df.empty:
             flash("No companies found. Please add a company first.", "info")
             return redirect(url_for("add_company"))
 
-        # Convert company data to a list of dictionaries for rendering
         companies = df.to_dict(orient="records")
 
         if request.method == "POST":
             selected_company = request.form.get("company_name")
-            print(f"📌 Selected company from form: {selected_company}")  # ✅ Debugging Step
-
             if not selected_company:
                 flash("Please select a company.", "error")
                 return redirect(url_for("view_company"))
 
-            company = df[df["Company Name"].str.strip().str.lower() == selected_company.strip().lower()]
-            print(f"🔍 Matching companies found: {company}")  # ✅ Debugging Step
-
+            company = df[df["Company Name"].str.strip() == selected_company.strip()]
             if company.empty:
                 flash("Company not found.", "error")
                 return redirect(url_for("view_company"))
 
-
-            # Get the first matching company as a dictionary
             company = company.iloc[0].to_dict()
 
-            # Validate the Documents field
-            folder_name = company.get("Documents")
-            if not folder_name:
-                flash("Document folder not specified for this company.", "error")
-                return redirect(url_for("view_company"))
-
-            # Validate the folder path
+            folder_name = company["Documents"]
             folder_path = os.path.join(MAIN_DIR, folder_name)
             if not os.path.exists(folder_path):
                 flash("Document folder does not exist.", "error")
                 return redirect(url_for("view_company"))
 
-            # Determine the URL for the company logo in the static folder
-            logo_url = get_company_logo_static(folder_name)
+            # Debugging Output
+            print(f"📌 Selected company from form: {selected_company}")
+            print(f"🔍 Matching companies found: {company}")
 
-            # Retrieve all documents in the company's folder
-            documents = {
-                doc: doc for doc in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, doc))
-            }
+            logo_url = get_company_logo_static(company["Company Name"], company["ABN"])
 
-            # Render the company details template with the logo and documents
+            documents = {doc: doc for doc in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, doc))}
+
             return render_template(
                 "company_details.html",
                 title="Company Details",
@@ -721,13 +701,13 @@ def view_company():
                 logo_url=logo_url
             )
 
-        # Render the view company template with the list of companies
         return render_template("view_company.html", title="View Companies", companies=companies)
 
     except Exception as e:
-        app.logger.error(f"Error loading companies: {e}")
         flash(f"Error loading companies: {e}", "error")
+        print(f"[ERROR] {e}")
         return redirect(url_for("index"))
+
 
 
 @app.route("/add_project", methods=["GET", "POST"])
@@ -821,13 +801,14 @@ def view_project(project_name):
 
 
 
-def get_company_logo_static(folder_name):
-    """Return the URL for the company logo in the static folder, or a default image if not found."""
-    logo_path = os.path.join("static", f"{folder_name}.png")
+@app.template_global()
+def get_company_logo_static(company_name, abn):
+    """Returns the static path for a company logo, or a default image if not found."""
+    logo_path = f"static/logos/{company_name}_{abn}.png"
     if os.path.exists(logo_path):
-        return url_for("static", filename=f"{folder_name}.png")
-    else:
-        return url_for("static", filename="NO LOGO AVAILABLE.png")
+        return url_for('static', filename=f"logos/{company_name}_{abn}.png")
+    return url_for('static', filename="default_logo.png")  # Ensure this default logo exists
+
 
 @app.route("/download/<path:filename>")
 @login_required
