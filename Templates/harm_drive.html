@@ -131,6 +131,33 @@
         </div>
     </div>
 
+    <!-- ✅ Update Vehicle Modal -->
+    <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="updateModalLabel">Update Vehicle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="/update_vehicle" id="updateVehicleForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="plate_to_update" name="plate_to_update">
+                        
+                        <div class="mb-3">
+                            <label for="new_rego_renewal_date" class="form-label">New Rego Renewal Date</label>
+                            <input type="date" id="new_rego_renewal_date" name="new_rego_renewal_date" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-warning">Update Vehicle</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
     <!-- ✅ Footer -->
     <footer class="text-center mt-5">
         <p class="small text-muted">&copy; 2024 Gazi OGUTCU. All rights reserved.</p>

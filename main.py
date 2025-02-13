@@ -364,23 +364,19 @@ def harm_drive():
 @login_required
 def update_vehicle():
     try:
-        # Extract data from the request
         plate_to_update = request.form["plate_to_update"].strip()
         new_rego_renewal_date = request.form["new_rego_renewal_date"].strip()
 
-        # Load the current Harm Drive Excel file
         df = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
 
-        # Ensure date is converted to DD/MM/YYYY format
+        # Convert date to DD/MM/YYYY format
         try:
             new_rego_renewal_date = pd.to_datetime(new_rego_renewal_date).strftime("%d/%m/%Y")
         except Exception as e:
             flash(f"Invalid date format: {e}", "error")
             return redirect(url_for("harm_drive"))
 
-        # Check if the vehicle exists
         if plate_to_update in df["Plate"].values:
-            # Update the Rego Renewal Date
             df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = new_rego_renewal_date
 
             # Recalculate Expiry
@@ -393,9 +389,8 @@ def update_vehicle():
 
             df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: calculate_expiry(x))
 
-            # Save the updated DataFrame back to the Excel file
+            # Save to Excel
             df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
-
             flash(f"Vehicle with plate {plate_to_update} updated successfully!", "success")
         else:
             flash(f"Vehicle with plate {plate_to_update} not found.", "error")
@@ -404,6 +399,7 @@ def update_vehicle():
         flash(f"Error updating vehicle: {e}", "error")
 
     return redirect(url_for("harm_drive"))
+
 
 
 @app.route('/add_vehicle', methods=['POST'])
