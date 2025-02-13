@@ -212,22 +212,22 @@
     <!-- ✅ JavaScript to Load Navbar -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            fetch("/navbar")
-                .then(response => {
-                    if (!response.ok) throw new Error("Navbar file not found!");
-                    return response.text();
-                })
-                .then(data => {
-                    document.getElementById("navbar-placeholder").innerHTML = data;
-
-                    // Re-initialize Bootstrap dropdowns after loading the navbar
-                    document.querySelectorAll('.dropdown-toggle').forEach(dropdown => {
-                        new bootstrap.Dropdown(dropdown);
-                    });
-                })
-                .catch(error => console.error("Error loading navbar:", error));
+            document.querySelectorAll(".btn-warning").forEach(button => {
+                button.addEventListener("click", function () {
+                    const plate = this.getAttribute("data-plate");
+                    document.getElementById("plate_to_update").value = plate;
+                });
+            });
+    
+            // ✅ Force page reload after update
+            document.querySelector("#updateVehicleForm").addEventListener("submit", function () {
+                setTimeout(() => {
+                    location.reload();
+                }, 1000); // Wait 1 second before reloading
+            });
         });
     </script>
+    
 
     <!-- ✅ Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>

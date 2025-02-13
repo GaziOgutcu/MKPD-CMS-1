@@ -367,7 +367,16 @@ def update_vehicle():
         plate_to_update = request.form["plate_to_update"].strip()
         new_rego_renewal_date = request.form["new_rego_renewal_date"].strip()
 
+        # Load the Harm Drive Excel file
         df = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
+
+        # Check if the vehicle exists
+        if plate_to_update not in df["Plate"].values:
+            flash(f"Vehicle with plate {plate_to_update} not found.", "error")
+            return redirect(url_for("harm_drive"))
+
+        # Debug: Print the row before updating
+        print("Before update:", df[df["Plate"] == plate_to_update])
 
         # Convert date to DD/MM/YYYY format
         try:
@@ -376,29 +385,26 @@ def update_vehicle():
             flash(f"Invalid date format: {e}", "error")
             return redirect(url_for("harm_drive"))
 
-        if plate_to_update in df["Plate"].values:
-            df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = new_rego_renewal_date
+        # Update the Rego Renewal Date
+        df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = new_rego_renewal_date
 
-            # Recalculate Expiry
-            def calculate_expiry(rego_date):
-                today = datetime.today()
-                rego_date = pd.to_datetime(rego_date, format="%d/%m/%Y", errors="coerce")
-                if pd.notnull(rego_date):
-                    return max((rego_date - today).days, 0)  # Ensure no negative expiry days
-                return None
+        # Recalculate Expiry
+        today = datetime.today()
+        df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: (pd.to_datetime(x, format="%d/%m/%Y") - today).days if pd.notnull(x) else None)
 
-            df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: calculate_expiry(x))
+        # Debug: Print the row after updating
+        print("After update:", df[df["Plate"] == plate_to_update])
 
-            # Save to Excel
-            df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
-            flash(f"Vehicle with plate {plate_to_update} updated successfully!", "success")
-        else:
-            flash(f"Vehicle with plate {plate_to_update} not found.", "error")
+        # Save the updated DataFrame back to the Excel file
+        df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
+
+        flash(f"Vehicle with plate {plate_to_update} updated successfully!", "success")
 
     except Exception as e:
         flash(f"Error updating vehicle: {e}", "error")
 
     return redirect(url_for("harm_drive"))
+
 
 
 
