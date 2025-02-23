@@ -178,6 +178,38 @@
         }
     </script>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".btn-warning").forEach(button => {
+                button.addEventListener("click", function () {
+                    const plate = this.getAttribute("data-plate");
+                    document.getElementById("plate_to_update").value = plate;
+                });
+            });
+
+            // ✅ Ensure update request is properly sent
+            document.querySelector("#updateVehicleForm").addEventListener("submit", function (e) {
+                e.preventDefault();
+                const form = e.target;
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form)
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.text();
+                })
+                .then(() => {
+                    alert('Vehicle updated successfully!');
+                    location.reload(true); // ✅ Force full reload
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    </script>
+
+
     <!-- ✅ JavaScript for Form Submission -->
     <script>
         document.querySelector('#addVehicleForm').addEventListener('submit', function (e) {
