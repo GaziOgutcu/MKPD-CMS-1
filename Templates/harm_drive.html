@@ -16,6 +16,7 @@
     <!-- ✅ Navbar Placeholder -->
     <div id="navbar-placeholder"></div>
 
+
     <!-- ✅ Logo Section -->
     <div class="container text-center my-4">
         <a href="/">
@@ -244,21 +245,18 @@
     <!-- ✅ JavaScript to Load Navbar -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll(".btn-warning").forEach(button => {
-                button.addEventListener("click", function () {
-                    const plate = this.getAttribute("data-plate");
-                    document.getElementById("plate_to_update").value = plate;
-                });
-            });
-    
-            // ✅ Force page reload after update
-            document.querySelector("#updateVehicleForm").addEventListener("submit", function () {
-                setTimeout(() => {
-                    location.reload();
-                }, 1000); // Wait 1 second before reloading
-            });
+            fetch("/navbar")
+                .then(response => {
+                    if (!response.ok) throw new Error("Navbar file not found!");
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById("navbar-placeholder").innerHTML = data;
+                })
+                .catch(error => console.error("Error loading navbar:", error));
         });
     </script>
+    
     
 
     <!-- ✅ Bootstrap JS -->
