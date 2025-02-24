@@ -53,7 +53,7 @@
                         <td>${{ "%.2f"|format(vehicle['Value']) }}</td>
                         <td>${{ "%.2f"|format(vehicle['Transfer Fee']) }}</td>
                         <td>
-                            <button class="btn btn-warning btn-sm"
+                            <button class="btn btn-warning btn-sm update-btn"
                                     data-bs-toggle="modal"
                                     data-bs-target="#updateModal"
                                     data-plate="{{ vehicle['Plate'] }}">
@@ -75,7 +75,7 @@
                     <h5 class="modal-title" id="updateModalLabel">Update Vehicle</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="POST" action="/update_vehicle" id="updateVehicleForm">
+                <form method="POST" action="/update_vehicle">
                     <div class="modal-body">
                         <input type="hidden" id="plate_to_update" name="plate_to_update">
                         <div class="mb-3">
@@ -92,48 +92,18 @@
         </div>
     </div>
 
+    <!-- ✅ JavaScript for Update Modal -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Attach event listener to update buttons
-            document.querySelectorAll(".btn-warning").forEach(button => {
+            document.querySelectorAll(".update-btn").forEach(button => {
                 button.addEventListener("click", function () {
                     const plate = this.getAttribute("data-plate");
-                    console.log("🔹 Update button clicked for plate:", plate);  // Debugging
+                    console.log("🔹 Setting plate for update:", plate);
                     document.getElementById("plate_to_update").value = plate;
-                });
-            });
-    
-            // Handle Update Form Submission
-            document.querySelector("#updateVehicleForm").addEventListener("submit", function (e) {
-                e.preventDefault();
-                const form = e.target;
-                const formData = new FormData(form);
-    
-                console.log("📤 Submitting Update Form:", Object.fromEntries(formData));  // Debugging
-    
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                    return response.text();
-                })
-                .then(responseText => {
-                    console.log("✅ Server Response:", responseText);  // Debugging
-                    alert('✅ Vehicle updated successfully!');
-    
-                    // Wait before reloading to ensure the update is fully applied
-                    setTimeout(() => location.reload(true), 1500);
-                })
-                .catch(error => {
-                    console.error('❌ Error:', error);
-                    alert("⚠️ Update failed. Please check console logs.");
                 });
             });
         });
     </script>
-    
 
     <!-- ✅ JavaScript to Load Navbar -->
     <script>
