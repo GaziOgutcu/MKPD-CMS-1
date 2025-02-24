@@ -361,58 +361,35 @@ def harm_drive():
 
 
 @app.route("/update_vehicle", methods=["POST"])
-@login_required
 def update_vehicle():
     try:
         plate_to_update = request.form["plate_to_update"].strip()
         new_rego_renewal_date = request.form["new_rego_renewal_date"].strip()
 
-        print(f"🔹 Received update request for plate: {plate_to_update} with new date: {new_rego_renewal_date}")
-
         df = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
 
-        # Check if vehicle exists
         if plate_to_update not in df["Plate"].values:
             flash(f"Vehicle with plate {plate_to_update} not found.", "error")
-            print("❌ Plate not found in database")
             return redirect(url_for("harm_drive"))
 
-        print("✅ Plate found in database")
-
-        # Convert date
-        try:
-            new_rego_renewal_date = pd.to_datetime(new_rego_renewal_date).strftime("%d/%m/%Y")
-        except Exception as e:
-            flash(f"Invalid date format: {e}", "error")
-            return redirect(url_for("harm_drive"))
-
-        # Debug: Check value before update
-        print("🔹 Before update:", df[df["Plate"] == plate_to_update])
-
-        # Update Excel
         df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = new_rego_renewal_date
 
-        # Recalculate expiry
         today = datetime.today()
         df["Expiry"] = df["Rego Renewal Date"].apply(
             lambda x: (pd.to_datetime(x, format="%d/%m/%Y") - today).days if pd.notnull(x) else None
         )
 
-        # Debug: Check value after update
-        print("🔹 After update:", df[df["Plate"] == plate_to_update])
-
         df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
 
-        print("✅ Excel file updated successfully!")
-
         flash(f"Vehicle with plate {plate_to_update} updated successfully!", "success")
+        return redirect(url_for("harm_drive"))
 
     except Exception as e:
         flash(f"Error updating vehicle: {e}", "error")
-        print(f"❌ Error: {e}")
+        return redirect(url_for("harm_drive"))
 
-    return redirect(url_for("harm_drive"))
-
+if __name__ == "__main__":
+    app.run(debug=True)
 
 
 
