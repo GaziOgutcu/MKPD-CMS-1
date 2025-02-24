@@ -76,6 +76,13 @@
         </div>
     </div>
 
+    <!-- ✅ Add New Vehicle Button -->
+    <div class="container text-center py-4">
+        <button class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+            + Add New Vehicle
+        </button>
+    </div>
+
     <!-- ✅ Update Vehicle Modal -->
     <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -123,6 +130,56 @@
         </div>
     </div>
 
+    <!-- ✅ Add Vehicle Modal -->
+    <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="addVehicleModalLabel">Add New Vehicle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="/add_vehicle">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="plate" class="form-label">Plate Number</label>
+                            <input type="text" id="plate" name="plate" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Vehicle Type</label>
+                            <input type="text" id="type" name="type" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="vin" class="form-label">VIN</label>
+                            <input type="text" id="vin" name="vin" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="regoRenewalDate" class="form-label">Rego Renewal Date</label>
+                            <input type="date" id="regoRenewalDate" name="rego_renewal_date" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="ctpDate" class="form-label">Insurance Renewal (CTP) Date</label>
+                            <input type="date" id="ctpDate" name="ctp_date" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="value" class="form-label">Value ($)</label>
+                            <input type="number" id="value" name="value" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transferFee" class="form-label">Transfer Fee ($)</label>
+                            <input type="number" id="transferFee" name="transfer_fee" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Add Vehicle</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
 
     <!-- ✅ JavaScript for Update Modal -->
     <script>
@@ -162,6 +219,61 @@
                 .catch(error => console.error("Error loading navbar:", error));
         });
     </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Handle Add Vehicle Form Submission
+            document.querySelector("#addVehicleModal form").addEventListener("submit", function (e) {
+                e.preventDefault();
+                const form = e.target;
+                const formData = new FormData(form);
+
+                console.log("📤 Submitting New Vehicle Form:", Object.fromEntries(formData));
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.text();
+                })
+                .then(responseText => {
+                    console.log("✅ Server Response:", responseText);
+                    alert('✅ Vehicle added successfully!');
+
+                    // ✅ Reset form fields after successful submission
+                    form.reset();
+                    location.reload(true);
+                })
+                .catch(error => {
+                    console.error('❌ Error:', error);
+                    alert("⚠️ Failed to add vehicle. Check console logs.");
+                });
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".delete-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    const plate = this.getAttribute("data-plate");
+                    console.log("❌ Setting plate for delete:", plate);
+                    document.getElementById("plate_to_delete").value = plate;
+
+                    // ✅ Show an additional confirmation alert
+                    if (!confirm(`Are you sure you want to delete vehicle with plate ${plate}?`)) {
+                        return; // Stop if user cancels
+                    }
+                });
+            });
+        });
+    </script>
+
+
+
+
 
     <!-- ✅ Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
