@@ -366,30 +366,52 @@ def update_vehicle():
         plate_to_update = request.form["plate_to_update"].strip()
         new_rego_renewal_date = request.form["new_rego_renewal_date"].strip()
 
+        print(f"🔹 Received update request for plate: {plate_to_update} with new date: {new_rego_renewal_date}")
+
         df = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
 
+        # Ensure vehicle exists
         if plate_to_update not in df["Plate"].values:
+            print(f"❌ Plate {plate_to_update} not found in Excel.")
             flash(f"Vehicle with plate {plate_to_update} not found.", "error")
             return redirect(url_for("harm_drive"))
 
+        print(f"✅ Plate {plate_to_update} found in Excel.")
+
+        # Convert date to ensure it's in the correct format
+        try:
+            new_rego_renewal_date = pd.to_datetime(new_rego_renewal_date, errors="coerce").strftime("%d/%m/%Y")
+        except Exception as e:
+            print(f"❌ Error formatting date: {e}")
+            flash(f"Invalid date format: {e}", "error")
+            return redirect(url_for("harm_drive"))
+
+        print(f"🔄 Updating Excel for {plate_to_update} with new Rego Renewal Date: {new_rego_renewal_date}")
+
+        # Update the Rego Renewal Date
         df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = new_rego_renewal_date
 
+        # Recalculate Expiry
         today = datetime.today()
         df["Expiry"] = df["Rego Renewal Date"].apply(
-            lambda x: (pd.to_datetime(x, format="%d/%m/%Y") - today).days if pd.notnull(x) else None
+            lambda x: (pd.to_datetime(x, format="%d/%m/%Y", errors="coerce") - today).days if pd.notnull(x) else None
         )
 
+        print("✅ Updated DataFrame:")
+        print(df[df["Plate"] == plate_to_update])  # Debug output
+
+        # Save to Excel
         df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
+        print(f"✅ Successfully saved changes to {HARM_DRIVE_FILE}")
 
         flash(f"Vehicle with plate {plate_to_update} updated successfully!", "success")
-        return redirect(url_for("harm_drive"))
 
     except Exception as e:
+        print(f"❌ Error updating vehicle: {e}")
         flash(f"Error updating vehicle: {e}", "error")
-        return redirect(url_for("harm_drive"))
 
-if __name__ == "__main__":
-    app.run(debug=True)
+    return redirect(url_for("harm_drive"))
+
 
 
 
