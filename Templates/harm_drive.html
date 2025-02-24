@@ -59,7 +59,16 @@
                                     data-plate="{{ vehicle['Plate'] }}">
                                 Update
                             </button>
+                        
+                            <!-- ✅ New Delete Button -->
+                            <button class="btn btn-danger btn-sm delete-btn"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal"
+                                    data-plate="{{ vehicle['Plate'] }}">
+                                Delete
+                            </button>
                         </td>
+                        
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -92,9 +101,33 @@
         </div>
     </div>
 
+    <!-- ✅ Delete Vehicle Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="/delete_vehicle">
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete this vehicle?</p>
+                        <input type="hidden" id="plate_to_delete" name="plate_to_delete">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
     <!-- ✅ JavaScript for Update Modal -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // Handle Update Button Click
             document.querySelectorAll(".update-btn").forEach(button => {
                 button.addEventListener("click", function () {
                     const plate = this.getAttribute("data-plate");
@@ -102,8 +135,18 @@
                     document.getElementById("plate_to_update").value = plate;
                 });
             });
+    
+            // ✅ Handle Delete Button Click (Pass Plate to Modal)
+            document.querySelectorAll(".delete-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    const plate = this.getAttribute("data-plate");
+                    console.log("❌ Setting plate for delete:", plate);
+                    document.getElementById("plate_to_delete").value = plate;
+                });
+            });
         });
     </script>
+    
 
     <!-- ✅ JavaScript to Load Navbar -->
     <script>
