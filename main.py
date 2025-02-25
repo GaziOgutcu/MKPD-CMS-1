@@ -487,7 +487,8 @@ def wahoo_vehicles():
         flash(f"Error loading Wahoo Pool Vehicles data: {e}", "error")
         wahoo_vehicles_list = []
 
-    return render_template("wahoo_pool.html", wahoo_vehicles=wahoo_vehicles_list)
+    return render_template("wahoo_vehicles.html", wahoo_vehicles=wahoo_vehicles_list)
+
 
 @app.route("/add_wahoo_vehicle", methods=["POST"])
 @login_required
