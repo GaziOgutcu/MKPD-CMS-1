@@ -465,45 +465,103 @@ def setup_wahoo_vehicles_file():
 
 setup_wahoo_vehicles_file()
 
-# Route to display Wahoo Pool Vehicles
+# ✅ Wahoo Pool Vehicles Routes
 @app.route("/wahoo_vehicles")
 @login_required
 def wahoo_vehicles():
     try:
         df = pd.read_excel(WAHOO_VEHICLES_FILE, engine="openpyxl")
+
+        # Ensure required columns exist
+        required_columns = ["Plate", "Type", "VIN", "Rego Renewal Date", "Insurance Renewal (CTP) Date", "Value", "Transfer Fee", "Expiry"]
+        for column in required_columns:
+            if column not in df.columns:
+                df[column] = None
+
+        # Format dates and calculate expiry
+        df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: calculate_expiry(x) if pd.notnull(x) else None)
+
         wahoo_vehicles_list = df.to_dict(orient="records")
     except Exception as e:
-        flash(f"Error loading Wahoo Vehicles data: {e}", "error")
+        flash(f"Error loading Wahoo Pool Vehicles data: {e}", "error")
         wahoo_vehicles_list = []
 
-    return render_template("dashboard.html", wahoo_vehicles=wahoo_vehicles_list)
+    return render_template("wahoo_pool.html", wahoo_vehicles=wahoo_vehicles_list)
 
-@app.route('/add_wahoo_vehicle', methods=['POST'])
+@app.route("/add_wahoo_vehicle", methods=["POST"])
+@login_required
 def add_wahoo_vehicle():
     try:
-        # ✅ Read form data
-        plate = request.form.get('plate')
-        vehicle_type = request.form.get('type')
-        expiry_date = request.form.get('expiry_date')
+        plate = request.form["plate"].strip()
+        type_ = request.form["type"].strip()
+        vin = request.form["vin"].strip()
+        rego_renewal_date = request.form["rego_renewal_date"].strip()
+        ctp_date = request.form.get("ctp_date", "").strip()
+        value = request.form["value"].strip()
+        transfer_fee = request.form.get("transfer_fee", "").strip()
 
-        # ✅ Validate data
-        if not plate or not vehicle_type or not expiry_date:
-            return jsonify({"success": False, "error": "All fields are required!"}), 400
+        df = pd.read_excel(WAHOO_VEHICLES_FILE, engine="openpyxl")
 
-        # ✅ Read the Excel file
-        df = pd.read_excel(WAHOO_VEHICLES_FILE)
+        new_vehicle = {
+            "Plate": plate,
+            "Type": type_,
+            "VIN": vin,
+            "Rego Renewal Date": rego_renewal_date,
+            "Insurance Renewal (CTP) Date": ctp_date,
+            "Expiry": calculate_expiry(rego_renewal_date),
+            "Value": value,
+            "Transfer Fee": transfer_fee
+        }
 
-        # ✅ Append the new vehicle
-        new_vehicle = {"Plate": plate, "Type": vehicle_type, "Expiry Date": expiry_date}
         df = pd.concat([df, pd.DataFrame([new_vehicle])], ignore_index=True)
+        df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
 
-        # ✅ Save the updated data
-        df.to_excel(WAHOO_VEHICLES_FILE, index=False)
-
-        return jsonify({"success": True, "message": "Vehicle added successfully!"})
-
+        flash("✅ Vehicle added successfully!", "success")
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        flash(f"⚠️ Error adding vehicle: {e}", "error")
+
+    return redirect(url_for("wahoo_vehicles"))
+
+@app.route("/update_wahoo_vehicle", methods=["POST"])
+@login_required
+def update_wahoo_vehicle():
+    try:
+        plate_to_update = request.form["plate_to_update"].strip()
+        new_rego_renewal_date = request.form["new_rego_renewal_date"].strip()
+
+        df = pd.read_excel(WAHOO_VEHICLES_FILE, engine="openpyxl")
+
+        if plate_to_update in df["Plate"].values:
+            df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = new_rego_renewal_date
+            df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: calculate_expiry(x) if pd.notnull(x) else None)
+            df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
+            flash(f"✅ Vehicle {plate_to_update} updated successfully!", "success")
+        else:
+            flash(f"⚠️ Vehicle with plate {plate_to_update} not found.", "error")
+    except Exception as e:
+        flash(f"⚠️ Error updating vehicle: {e}", "error")
+
+    return redirect(url_for("wahoo_vehicles"))
+
+@app.route("/delete_wahoo_vehicle", methods=["POST"])
+@login_required
+def delete_wahoo_vehicle():
+    try:
+        plate_to_delete = request.form["plate_to_delete"].strip()
+
+        df = pd.read_excel(WAHOO_VEHICLES_FILE, engine="openpyxl")
+
+        if plate_to_delete in df["Plate"].values:
+            df = df[df["Plate"] != plate_to_delete]
+            df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
+            flash(f"✅ Vehicle {plate_to_delete} deleted successfully!", "success")
+        else:
+            flash(f"⚠️ Vehicle with plate {plate_to_delete} not found.", "error")
+    except Exception as e:
+        flash(f"⚠️ Error deleting vehicle: {e}", "error")
+
+    return redirect(url_for("wahoo_vehicles"))
 
 
 
@@ -840,4 +898,4 @@ def download_file(company_folder, filename):
 
 
 if __name__ == "__main__":
-    app.run
+    app.run(debug=True)
