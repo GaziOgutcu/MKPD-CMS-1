@@ -329,6 +329,20 @@
     background-color: #0056b3;
 }
 
+.dropdown-menu {
+    background-color: #003366;
+}
+
+.dropdown-item {
+    color: white;
+    font-weight: bold;
+}
+
+.dropdown-item:hover {
+    background-color: #00509e;
+    color: yellow;
+}
+
 
 /* Buttons */
 .btn {
