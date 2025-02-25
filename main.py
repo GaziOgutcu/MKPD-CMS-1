@@ -377,10 +377,10 @@ def update_vehicle():
 
         print(f"✅ Plate {plate_to_update} found in Excel.")
 
-        # Convert date to proper format
-        new_rego_renewal_date = pd.to_datetime(new_rego_renewal_date, errors="coerce").strftime("%d/%m/%Y")
+        # Convert and format date properly
+        new_rego_renewal_date = pd.to_datetime(new_rego_renewal_date, errors="coerce", dayfirst=True).strftime("%d/%m/%Y")
 
-        # Update Excel file
+        # Ensure the correct row is being updated
         df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = new_rego_renewal_date
 
         # Recalculate Expiry
@@ -392,10 +392,19 @@ def update_vehicle():
         print("✅ Updated DataFrame:")
         print(df[df["Plate"] == plate_to_update])  # Debugging output
 
-        # Save the updated Excel file
+        # Save the updated DataFrame back to the Excel file
         df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
-        print(f"✅ Successfully saved changes to {HARM_DRIVE_FILE}")
 
+        # Reload to confirm changes were saved
+        df_check = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
+        if plate_to_update in df_check["Plate"].values:
+            saved_date = df_check.loc[df_check["Plate"] == plate_to_update, "Rego Renewal Date"].values[0]
+            if saved_date == new_rego_renewal_date:
+                print(f"✅ Verified: Rego Renewal Date updated successfully for {plate_to_update}")
+            else:
+                print(f"❌ Warning: Mismatch detected in saved date! Expected {new_rego_renewal_date}, but got {saved_date}")
+
+        print(f"✅ Successfully saved changes to {HARM_DRIVE_FILE}")
         flash(f"Vehicle with plate {plate_to_update} updated successfully!", "success")
 
         return redirect(url_for("harm_drive"))
@@ -404,6 +413,7 @@ def update_vehicle():
         print(f"❌ Error updating vehicle: {e}")
         flash(f"Error updating vehicle: {e}", "error")
         return redirect(url_for("harm_drive"))
+
 
 
 
