@@ -478,9 +478,10 @@ def wahoo_vehicles():
             if column not in df.columns:
                 df[column] = None
 
-        # Format dates and calculate expiry
-        df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], errors="coerce")  # Keep as datetime
         df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: calculate_expiry(x) if pd.notnull(x) else None)
+        df["Rego Renewal Date"] = df["Rego Renewal Date"].dt.strftime("%Y-%m-%d")  # Convert to string only for saving
+
 
         wahoo_vehicles_list = df.to_dict(orient="records")
     except Exception as e:
