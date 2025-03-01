@@ -1,32 +1,29 @@
-from flask import Flask, render_template, send_from_directory, request, redirect, url_for, session, flash, send_file, jsonify
 import os
-import pandas as pd
-from werkzeug.utils import secure_filename
 from datetime import datetime
+import pandas as pd
 import requests
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for, session, flash, send_file, jsonify
+from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from functools import wraps
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 
+
+if os.path.exists(logo_path):
+    print(f"✅ Logo found: {logo_path}")  # Add logic here
+
+logo_filename = "default_logo.png"  # Ensure it has a default value
 logo_path = os.path.join(BASE_DIR, "static", "logos", logo_filename)
 
 if os.path.exists(logo_path):
-
-
-# Load environment variables from .env file
-load_dotenv()
+    print(f"✅ Logo found: {logo_path}")  # ✅ Fixed
 
 
 # Initialize Flask app
 app = Flask(__name__, template_folder='Templates')
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret_key")
-from dotenv import load_dotenv
-
-load_dotenv()
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret_key")
-
 
 # print(f"Secret Key: {app.secret_key}")
 
@@ -916,14 +913,19 @@ def get_company_logo_static(company_name, abn):
 def download_file(company_folder, filename):
     company_folder = secure_filename(company_folder)
     filename = secure_filename(filename)
-    filepath = os.path.join(MAIN_DIR, company_folder, filename)
+
+    filepath = os.path.abspath(os.path.join(MAIN_DIR, company_folder, filename))
+
+    # Prevent path traversal attacks
+    if not filepath.startswith(os.path.abspath(MAIN_DIR)):
+        flash("Unauthorized access detected!", "error")
+        return redirect(url_for("view_company"))
 
     if not os.path.exists(filepath):
         flash("File not found!", "error")
         return redirect(url_for("view_company"))
 
     return send_file(filepath, as_attachment=True)
-
 
 
 if __name__ == "__main__":
