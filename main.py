@@ -277,16 +277,17 @@ def setup_harm_drive_file():
 @login_required
 def harm_drive():
     try:
-        # Load the data from the Harm Drive Excel file or create one if it doesn't exist
+        # 🟢 1. Ensure the Excel file exists
         if not os.path.exists(HARM_DRIVE_FILE):
             pd.DataFrame(columns=[
                 "Plate", "Type", "VIN", "Rego Renewal Date",
                 "Insurance Renewal (CTP) Date", "Value", "Transfer Fee", "Expiry"
             ]).to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
 
-        df = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
+        # 🟢 2. Read the Excel file (force date columns as strings to avoid auto-formatting issues)
+        df = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl", dtype=str)
 
-        # Ensure necessary columns exist
+        # 🟢 3. Ensure necessary columns exist
         required_columns = [
             "Plate", "Type", "VIN", "Rego Renewal Date",
             "Insurance Renewal (CTP) Date", "Value", "Transfer Fee", "Expiry"
@@ -295,57 +296,65 @@ def harm_drive():
             if column not in df.columns:
                 df[column] = None
 
-        # Format dates to DD/MM/YYYY
+        # 🟢 4. Define function to enforce `DD/MM/YYYY` format
         def format_date_ddmmyyyy(date):
-            if pd.notnull(date):
-                return pd.to_datetime(date, dayfirst=True).strftime("%d/%m/%Y")
+            """
+            Ensures that the date is in DD/MM/YYYY format.
+            """
+            try:
+                if pd.notnull(date):
+                    return pd.to_datetime(date, format="%d/%m/%Y", errors="coerce").strftime("%d/%m/%Y")
+            except Exception:
+                return None  # Return None if date conversion fails
             return None
 
-        # Calculate expiry days
+        # 🟢 5. Ensure correct date parsing & expiry calculation
         def calculate_expiry(rego_date):
+            """
+            Calculate the number of days until a given date.
+            """
             try:
                 today = datetime.today()
-                rego_date = pd.to_datetime(rego_date, dayfirst=True)
-                return (rego_date - today).days
+                rego_date = pd.to_datetime(rego_date, format="%d/%m/%Y", errors="coerce")
+                return (rego_date - today).days if pd.notnull(rego_date) else None
             except Exception:
                 return None
 
-        # Apply date formatting and expiry calculations
-        df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], format="%d/%m/%Y", errors="coerce").dt.strftime("%d/%m/%Y")
-        df["Insurance Renewal (CTP) Date"] = pd.to_datetime(df["Insurance Renewal (CTP) Date"], format="%d/%m/%Y", errors="coerce").dt.strftime("%d/%m/%Y")
+        # 🟢 6. Apply correct date formatting and expiry calculations
+        df["Rego Renewal Date"] = df["Rego Renewal Date"].apply(format_date_ddmmyyyy)
+        df["Insurance Renewal (CTP) Date"] = df["Insurance Renewal (CTP) Date"].apply(format_date_ddmmyyyy)
         df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: calculate_expiry(x) if pd.notnull(x) else None)
 
-
-        # Convert DataFrame to a list of dictionaries for rendering
+        # 🟢 7. Convert DataFrame to list of dictionaries for rendering in template
         vehicles = df.to_dict(orient="records")
 
-        # Handle POST requests for adding, updating, or deleting vehicles
+        # 🟢 8. Handle POST requests (Add, Update, Delete)
         if request.method == "POST":
             action = request.form.get("action")
 
+            # 🟢 8A. Add New Vehicle
             if action == "add":
                 try:
                     new_vehicle = {
                         "Plate": request.form["plate"].strip(),
                         "Type": request.form["type"].strip(),
                         "VIN": request.form["vin"].strip(),
-                        "Rego Renewal Date": request.form["rego_renewal_date"].strip(),
-                        "Insurance Renewal (CTP) Date": request.form.get("ctp_date", "").strip(),
+                        "Rego Renewal Date": format_date_ddmmyyyy(request.form["rego_renewal_date"].strip()),
+                        "Insurance Renewal (CTP) Date": format_date_ddmmyyyy(request.form.get("ctp_date", "").strip()),
                         "Value": float(request.form["value"]),
                         "Transfer Fee": float(request.form.get("transfer_fee", 0)),
-                        "Expiry": None  # Will be recalculated
+                        "Expiry": None  # Expiry will be recalculated
                     }
+
                     df = pd.concat([df, pd.DataFrame([new_vehicle])], ignore_index=True)
-                    df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], errors="coerce").dt.strftime("%d/%m/%Y")
-                    df["Insurance Renewal (CTP) Date"] = pd.to_datetime(df["Insurance Renewal (CTP) Date"], errors="coerce").dt.strftime("%d/%m/%Y")
-                    df["Expiry"] = df["Rego Renewal Date"].apply(
-                        lambda x: calculate_expiry(x) if pd.notnull(x) else None
-                    )
+                    df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: calculate_expiry(x) if pd.notnull(x) else None)
                     df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
+
                     flash("Vehicle added successfully!", "success")
                 except Exception as e:
                     flash(f"Error adding vehicle: {e}", "error")
 
+            # 🟢 8B. Delete a Vehicle
             elif action == "delete":
                 try:
                     plate_to_delete = request.form["plate_to_delete"].strip()
@@ -358,29 +367,36 @@ def harm_drive():
                 except Exception as e:
                     flash(f"Error deleting vehicle: {e}", "error")
 
+            # 🟢 8C. Update a Vehicle's Rego Renewal Date
             elif action == "update":
                 try:
                     plate_to_update = request.form["plate_to_update"].strip()
-                    rego_renewal = request.form["rego_renewal_update"].strip()
+                    new_rego_renewal_date = request.form["rego_renewal_update"].strip()
+
                     if plate_to_update in df["Plate"].values:
-                        df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = rego_renewal
-                        df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], format="%d/%m/%Y", errors="coerce").dt.strftime("%d/%m/%Y")
-                        df["Expiry"] = df["Rego Renewal Date"].apply(
-                            lambda x: calculate_expiry(x) if pd.notnull(x) else None
-                        )
+                        # ✅ Ensure the new date is converted correctly to `DD/MM/YYYY`
+                        df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = format_date_ddmmyyyy(new_rego_renewal_date)
+
+                        # ✅ Recalculate expiry based on the new date
+                        df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: calculate_expiry(x) if pd.notnull(x) else None)
+
+                        # ✅ Save back to Excel
                         df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
+
                         flash(f"Vehicle with plate {plate_to_update} updated successfully!", "success")
                     else:
                         flash(f"Vehicle with plate {plate_to_update} not found.", "error")
+
                 except Exception as e:
                     flash(f"Error updating vehicle: {e}", "error")
 
-        # Render the harm_drive template with the vehicle data
+        # 🟢 9. Render the template with the updated vehicle data
         return render_template("harm_drive.html", title="Harm Drive Pty Ltd", vehicles=vehicles)
 
     except Exception as e:
         flash(f"Error processing Harm Drive Pty Ltd data: {e}", "error")
         return redirect(url_for("index"))
+
 
 
 
