@@ -4,6 +4,10 @@ import pandas as pd
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import requests
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 # Initialize Flask app
@@ -14,15 +18,26 @@ app.secret_key = "super_secret_key"
 
 # print(app.jinja_loader.searchpath)
 
-# Constants
-EXCEL_FILE = os.path.join(os.getcwd(), "CompanyData.xlsx")
-MAIN_DIR = "CompanyFolders"
+
+# Secure Environment Variables
+PASSWORD = os.getenv("ADMIN_PASSWORD", "default_fallback_password")
+
+# Define Base Directory
+BASE_DIR = os.getcwd()
+
+# File Paths
+EXCEL_FILE = os.path.join(BASE_DIR, "CompanyData.xlsx")
+MAIN_DIR = os.path.join(BASE_DIR, "CompanyFolders")
+EMPLOYEE_FILE = os.path.join(BASE_DIR, "employees.xlsx")
+HARM_DRIVE_FILE = os.path.join(BASE_DIR, "HarmDriveData.xlsx")
+PROJECTS_FILE = os.path.join(BASE_DIR, "projects.xlsx")
+
+# Allowed File Extensions
 ALLOWED_EXTENSIONS = {"pdf", "docx", "jpg", "jpeg", "png"}
-PASSWORD = "Admin.123."
-EMPLOYEE_FILE = "employees.xlsx"
-HARM_DRIVE_FILE = 'HarmDriveData.xlsx'
-PROJECTS_FILE = "projects.xlsx"
-PROJECT_IMAGES_DIR = os.path.join("static", "project_images")
+
+# Project Images Directory
+PROJECT_IMAGES_DIR = os.path.join(BASE_DIR, "static", "project_images")
+os.makedirs(PROJECT_IMAGES_DIR, exist_ok=True)  # Ensure it exists
 
 # File path for Wahoo Pool Vehicles
 WAHOO_VEHICLES_FILE = "wahoo_pool_vehicles.xlsx"
@@ -413,9 +428,6 @@ def update_vehicle():
         print(f"❌ Error updating vehicle: {e}")
         flash(f"Error updating vehicle: {e}", "error")
         return redirect(url_for("harm_drive"))
-
-
-
 
 
 
