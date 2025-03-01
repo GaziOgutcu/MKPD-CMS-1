@@ -53,6 +53,8 @@ if os.path.exists(logo_path):
 
 if not os.path.exists(PROJECTS_FILE):
     pd.DataFrame(columns=["Project Name", "Description", "Start Date", "End Date"]).to_excel(PROJECTS_FILE, index=False)
+    
+print(f"🔹 DEBUG: Current Admin Password: {PASSWORD}")
 
 
 # Utility function to initialize Excel files if they don't exist
