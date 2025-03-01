@@ -5,6 +5,15 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import requests
 from dotenv import load_dotenv
+from functools import wraps
+
+# Load environment variables from .env file
+load_dotenv()
+
+logo_path = os.path.join(BASE_DIR, "static", "logos", logo_filename)
+
+if os.path.exists(logo_path):
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -12,7 +21,12 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__, template_folder='Templates')
-app.secret_key = "super_secret_key"
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret_key")
+from dotenv import load_dotenv
+
+load_dotenv()
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret_key")
+
 
 # print(f"Secret Key: {app.secret_key}")
 
@@ -43,8 +57,6 @@ os.makedirs(PROJECT_IMAGES_DIR, exist_ok=True)  # Ensure it exists
 WAHOO_VEHICLES_FILE = "wahoo_pool_vehicles.xlsx"
 
 
-if not os.path.exists(PROJECT_IMAGES_DIR):
-    os.makedirs(PROJECT_IMAGES_DIR)
 
 if not os.path.exists(PROJECTS_FILE):
     pd.DataFrame(columns=["Project Name", "Description", "Start Date", "End Date"]).to_excel(PROJECTS_FILE, index=False)
@@ -103,12 +115,12 @@ def allowed_file(filename):
 
 # Middleware to protect routes
 def login_required(f):
+    @wraps(f)  # 🔹 Preserves function metadata
     def wrapper(*args, **kwargs):
         if not session.get("logged_in"):
             flash("You must log in to access this page.", "error")
             return redirect(url_for("login"))
         return f(*args, **kwargs)
-    wrapper.__name__ = f.__name__
     return wrapper
 
 def calculate_expiry(rego_date):
@@ -480,7 +492,7 @@ def delete_vehicle():
 # Ensure the Wahoo Vehicles file exists
 def setup_wahoo_vehicles_file():
     if not os.path.exists(WAHOO_VEHICLES_FILE):
-        columns = ["Plate", "Type", "Expiry Date"]
+        required_columns = ["Plate", "Type", "VIN", "Rego Renewal Date", "Insurance Renewal (CTP) Date", "Value", "Transfer Fee", "Expiry"]
         df = pd.DataFrame(columns=columns)
         df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
 
@@ -695,10 +707,9 @@ def add_company():
             # Handle optional document uploads
             for field_name in ["company_registration", "logo"]:
                 file = request.files.get(field_name)
-                if file and allowed_file(file.filename):
-                    saved_path = os.path.join(folder_path, secure_filename(file.filename))
-                    file.save(saved_path)
-                    app.logger.info(f"Saved {field_name} to {saved_path}")
+                if file and file.filename and allowed_file(file.filename):
+                    file.save(os.path.join(folder_path, secure_filename(file.filename)))
+
 
             # Update the Excel file
             if not os.path.exists(EXCEL_FILE):
@@ -901,23 +912,17 @@ def get_company_logo_static(company_name, abn):
         return url_for("static", filename="default_logo.png")
 
 
-
-
-@app.route("/download/<path:company_folder>/<path:filename>")
-@login_required
+@app.route("/download/<company_folder>/<filename>")
 def download_file(company_folder, filename):
-    try:
-        # Construct the full file path inside the correct company folder
-        filepath = os.path.join(MAIN_DIR, company_folder, filename)
+    company_folder = secure_filename(company_folder)
+    filename = secure_filename(filename)
+    filepath = os.path.join(MAIN_DIR, company_folder, filename)
 
-        if not os.path.exists(filepath):
-            flash("File not found!", "error")
-            return redirect(url_for("view_company"))
-
-        return send_file(filepath, as_attachment=True)
-    except Exception as e:
-        flash(f"Error downloading file: {e}", "error")
+    if not os.path.exists(filepath):
+        flash("File not found!", "error")
         return redirect(url_for("view_company"))
+
+    return send_file(filepath, as_attachment=True)
 
 
 
