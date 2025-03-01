@@ -486,7 +486,7 @@ def delete_vehicle():
 def setup_wahoo_vehicles_file():
     if not os.path.exists(WAHOO_VEHICLES_FILE):
         required_columns = ["Plate", "Type", "VIN", "Rego Renewal Date", "Insurance Renewal (CTP) Date", "Value", "Transfer Fee", "Expiry"]
-        df = pd.DataFrame(columns=columns)
+        df = pd.DataFrame(columns=required_columns)  # ✅ Correct
         df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
 
 
