@@ -311,9 +311,10 @@ def harm_drive():
                 return None
 
         # Apply date formatting and expiry calculations
-        df["Rego Renewal Date"] = df["Rego Renewal Date"].apply(format_date_ddmmyyyy)
-        df["Insurance Renewal (CTP) Date"] = df["Insurance Renewal (CTP) Date"].apply(format_date_ddmmyyyy)
+        df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], format="%d/%m/%Y", errors="coerce").dt.strftime("%d/%m/%Y")
+        df["Insurance Renewal (CTP) Date"] = pd.to_datetime(df["Insurance Renewal (CTP) Date"], format="%d/%m/%Y", errors="coerce").dt.strftime("%d/%m/%Y")
         df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: calculate_expiry(x) if pd.notnull(x) else None)
+
 
         # Convert DataFrame to a list of dictionaries for rendering
         vehicles = df.to_dict(orient="records")
