@@ -363,7 +363,7 @@ def harm_drive():
                     rego_renewal = request.form["rego_renewal_update"].strip()
                     if plate_to_update in df["Plate"].values:
                         df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = rego_renewal
-                        df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], errors="coerce").dt.strftime("%d/%m/%Y")
+                        df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], format="%d/%m/%Y", errors="coerce").dt.strftime("%d/%m/%Y")
                         df["Expiry"] = df["Rego Renewal Date"].apply(
                             lambda x: calculate_expiry(x) if pd.notnull(x) else None
                         )
