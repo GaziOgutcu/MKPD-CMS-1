@@ -7,20 +7,6 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from functools import wraps
 
-# Load environment variables
-load_dotenv()
-
-
-if os.path.exists(logo_path):
-    print(f"✅ Logo found: {logo_path}")  # Add logic here
-
-logo_filename = "default_logo.png"  # Ensure it has a default value
-logo_path = os.path.join(BASE_DIR, "static", "logos", logo_filename)
-
-if os.path.exists(logo_path):
-    print(f"✅ Logo found: {logo_path}")  # ✅ Fixed
-
-
 # Initialize Flask app
 app = Flask(__name__, template_folder='Templates')
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret_key")
@@ -52,6 +38,16 @@ os.makedirs(PROJECT_IMAGES_DIR, exist_ok=True)  # Ensure it exists
 
 # File path for Wahoo Pool Vehicles
 WAHOO_VEHICLES_FILE = "wahoo_pool_vehicles.xlsx"
+
+# Load environment variables
+load_dotenv()
+
+
+logo_filename = "default_logo.png"  # Ensure it has a default value
+logo_path = os.path.join(BASE_DIR, "static", "logos", logo_filename)
+
+if os.path.exists(logo_path):
+    print(f"✅ Logo found: {logo_path}")  # ✅ Fixed
 
 
 
@@ -928,5 +924,7 @@ def download_file(company_folder, filename):
     return send_file(filepath, as_attachment=True)
 
 
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=os.getenv("FLASK_DEBUG", "False") == "True")
+
