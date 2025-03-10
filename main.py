@@ -10,8 +10,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_caching import Cache
 
-cache = Cache(app, config={"CACHE_TYPE": "simple"})
-
 # Define Base Directory
 BASE_DIR = os.getcwd()
 
@@ -61,6 +59,8 @@ if DATABASE_URL.startswith("postgres://"):
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+#NEWS FETCH CACHE
+cache = Cache(app, config={"CACHE_TYPE": "simple"})
 
 # ✅ Initialize Database
 db = SQLAlchemy(app)
