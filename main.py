@@ -391,26 +391,27 @@ def harm_drive():
 
 
 @app.route("/update_vehicle", methods=["POST"])
+@login_required
 def update_vehicle():
     try:
         plate_to_update = request.form["plate_to_update"].strip()
         new_rego_renewal_date = request.form["new_rego_renewal_date"].strip()
 
-        print(f"🔹 Received update request for plate: {plate_to_update} with new date: {new_rego_renewal_date}")
+        print(f"🔹 Update requested for plate: {plate_to_update} with new date: {new_rego_renewal_date}")
 
         df = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
 
         if plate_to_update not in df["Plate"].values:
-            print(f"❌ Plate {plate_to_update} not found in Excel.")
+            print(f"❌ Error: Plate {plate_to_update} not found in the Excel file.")
             flash(f"Vehicle with plate {plate_to_update} not found.", "error")
             return redirect(url_for("harm_drive"))
 
-        print(f"✅ Plate {plate_to_update} found in Excel.")
+        print(f"✅ Plate {plate_to_update} found. Proceeding with update.")
 
-        # Convert and format date properly
+        # Convert new date to the expected format
         new_rego_renewal_date = pd.to_datetime(new_rego_renewal_date, errors="coerce", dayfirst=True).strftime("%d/%m/%Y")
 
-        # Ensure the correct row is being updated
+        # Update the corresponding row
         df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = new_rego_renewal_date
 
         # Recalculate Expiry
@@ -422,19 +423,18 @@ def update_vehicle():
         print("✅ Updated DataFrame:")
         print(df[df["Plate"] == plate_to_update])  # Debugging output
 
-        # Save the updated DataFrame back to the Excel file
+        # Save changes to Excel
         df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
 
-        # Reload to confirm changes were saved
+        # ✅ Double-check if update was successful
         df_check = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
-        if plate_to_update in df_check["Plate"].values:
-            saved_date = df_check.loc[df_check["Plate"] == plate_to_update, "Rego Renewal Date"].values[0]
-            if saved_date == new_rego_renewal_date:
-                print(f"✅ Verified: Rego Renewal Date updated successfully for {plate_to_update}")
-            else:
-                print(f"❌ Warning: Mismatch detected in saved date! Expected {new_rego_renewal_date}, but got {saved_date}")
+        saved_date = df_check.loc[df_check["Plate"] == plate_to_update, "Rego Renewal Date"].values[0]
 
-        print(f"✅ Successfully saved changes to {HARM_DRIVE_FILE}")
+        if saved_date == new_rego_renewal_date:
+            print(f"✅ Verified: Rego Renewal Date successfully updated for {plate_to_update}")
+        else:
+            print(f"❌ Warning: Mismatch in saved date! Expected {new_rego_renewal_date}, but got {saved_date}")
+
         flash(f"Vehicle with plate {plate_to_update} updated successfully!", "success")
 
         return redirect(url_for("harm_drive"))
@@ -443,6 +443,7 @@ def update_vehicle():
         print(f"❌ Error updating vehicle: {e}")
         flash(f"Error updating vehicle: {e}", "error")
         return redirect(url_for("harm_drive"))
+
 
 
 

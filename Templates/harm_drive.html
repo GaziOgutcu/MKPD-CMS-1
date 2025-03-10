@@ -184,7 +184,6 @@
     <!-- ✅ JavaScript for Update Modal -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Handle Update Button Click
             document.querySelectorAll(".update-btn").forEach(button => {
                 button.addEventListener("click", function () {
                     const plate = this.getAttribute("data-plate");
@@ -192,16 +191,36 @@
                     document.getElementById("plate_to_update").value = plate;
                 });
             });
-    
-            // ✅ Handle Delete Button Click (Pass Plate to Modal)
-            document.querySelectorAll(".delete-btn").forEach(button => {
-                button.addEventListener("click", function () {
-                    const plate = this.getAttribute("data-plate");
-                    console.log("❌ Setting plate for delete:", plate);
-                    document.getElementById("plate_to_delete").value = plate;
+
+            document.querySelector("#updateModal form").addEventListener("submit", function (e) {
+                e.preventDefault();
+                const form = e.target;
+                const formData = new FormData(form);
+
+                console.log("📤 Submitting Update Form:", Object.fromEntries(formData));
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.text();
+                })
+                .then(responseText => {
+                    console.log("✅ Server Response:", responseText);
+                    alert('✅ Vehicle updated successfully!');
+
+                    // ✅ Refresh to reflect changes
+                    location.reload(true);
+                })
+                .catch(error => {
+                    console.error('❌ Error:', error);
+                    alert("⚠️ Failed to update vehicle. Check console logs.");
                 });
             });
         });
+
     </script>
     
 
