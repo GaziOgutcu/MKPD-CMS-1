@@ -9,6 +9,8 @@ from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
+# Define Base Directory
+BASE_DIR = os.getcwd()
 
 # Initialize Flask app
 app = Flask(__name__, template_folder='Templates')
