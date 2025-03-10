@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_caching import Cache
+
+cache = Cache(app, config={"CACHE_TYPE": "simple"})
 
 # Define Base Directory
 BASE_DIR = os.getcwd()
@@ -22,12 +25,15 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret_key")
 
 PROJECTS_FILE = os.path.join(BASE_DIR, "projects.xlsx")
 
+REQUIRED_ENV_VARS = ["FLASK_SECRET_KEY", "ADMIN_PASSWORD", "DATABASE_URL"]
+for var in REQUIRED_ENV_VARS:
+    if not os.getenv(var):
+        raise ValueError(f"❌ Missing environment variable: {var}")
+
 
 # Secure Environment Variables
 PASSWORD = os.getenv("ADMIN_PASSWORD", "default_fallback_password")
 
-# Define Base Directory
-BASE_DIR = os.getcwd()
 
 # Allowed File Extensions
 ALLOWED_EXTENSIONS = {"pdf", "docx", "jpg", "jpeg", "png"}
@@ -78,6 +84,9 @@ class Vehicle(db.Model):
     def __repr__(self):
         return f"<Vehicle {self.plate}>"
 
+# Define Base Directory
+MAIN_DIR = os.path.join(BASE_DIR, "CompanyFolders")
+os.makedirs(MAIN_DIR, exist_ok=True)  # Ensure it exists
 
 
 logo_filename = "default_logo.png"  # Ensure it has a default value
@@ -128,6 +137,7 @@ def format_date_ddmmyyyy(date):
     return None
 
 
+@cache.cached(timeout=600)  # Cache for 10 minutes
 def get_qld_construction_news():
     # Load API key securely (replace with a default fallback if needed)
     api_key = os.getenv('NEWS_API_KEY', 'bfb864ec86be43f49b257cb04ff2ab0f')  # Secure environment variable
@@ -173,7 +183,6 @@ def get_qld_construction_news():
         # Handle JSON parsing errors
         print(f"Error parsing response JSON: {e}")
         return []
-
 
 # ✅ Route to serve the Navbar file
 @app.route("/navbar")
@@ -226,7 +235,7 @@ def index():
 
         # Pagination Logic
         PER_PAGE = 5  # 5 news items per page
-        page = int(request.args.get("page", 1))
+        page = page = max(1, min(page, total_pages))  # Ensure page is within valid range
         total_pages = (len(news_items) + PER_PAGE - 1) // PER_PAGE
         paginated_news = news_items[(page - 1) * PER_PAGE: page * PER_PAGE]
 
@@ -339,30 +348,16 @@ def setup_wahoo_vehicles_file():
 
 setup_wahoo_vehicles_file()
 
-# ✅ Wahoo Pool Vehicles Routes
 @app.route("/wahoo_vehicles")
 @login_required
 def wahoo_vehicles():
     try:
-        df = pd.read_excel(WAHOO_VEHICLES_FILE, engine="openpyxl")
-
-        # Ensure required columns exist
-        required_columns = ["Plate", "Type", "VIN", "Rego Renewal Date", "Insurance Renewal (CTP) Date", "Value", "Transfer Fee", "Expiry"]
-        for column in required_columns:
-            if column not in df.columns:
-                df[column] = None
-
-        df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], errors="coerce")  # Keep as datetime
-        df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: calculate_expiry(x) if pd.notnull(x) else None)
-        df["Rego Renewal Date"] = df["Rego Renewal Date"].dt.strftime("%Y-%m-%d")  # Convert to string only for saving
-
-
-        wahoo_vehicles_list = df.to_dict(orient="records")
+        vehicles = Vehicle.query.all()  # Use SQLAlchemy
+        return render_template("wahoo_vehicles.html", wahoo_vehicles=vehicles)
     except Exception as e:
         flash(f"Error loading Wahoo Pool Vehicles data: {e}", "error")
-        wahoo_vehicles_list = []
+        return redirect(url_for("index"))
 
-    return render_template("wahoo_vehicles.html", wahoo_vehicles=wahoo_vehicles_list)
 
 
 @app.route("/add_wahoo_vehicle", methods=["POST"])
