@@ -18,6 +18,8 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret_key")
 
 # print(app.jinja_loader.searchpath)
 
+PROJECTS_FILE = os.path.join(BASE_DIR, "projects.xlsx")
+
 
 # Secure Environment Variables
 PASSWORD = os.getenv("ADMIN_PASSWORD", "default_fallback_password")
