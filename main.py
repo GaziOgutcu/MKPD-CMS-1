@@ -399,6 +399,7 @@ def update_vehicle():
 
         print(f"🔹 Update requested for plate: {plate_to_update} with new date: {new_rego_renewal_date}")
 
+        # Load existing data
         df = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
 
         if plate_to_update not in df["Plate"].values:
@@ -408,7 +409,7 @@ def update_vehicle():
 
         print(f"✅ Plate {plate_to_update} found. Proceeding with update.")
 
-        # Convert new date to the expected format
+        # Convert new date to proper format
         new_rego_renewal_date = pd.to_datetime(new_rego_renewal_date, errors="coerce", dayfirst=True).strftime("%d/%m/%Y")
 
         # Update the corresponding row
@@ -420,20 +421,23 @@ def update_vehicle():
             lambda x: (pd.to_datetime(x, format="%d/%m/%Y", errors="coerce") - today).days if pd.notnull(x) else None
         )
 
-        print("✅ Updated DataFrame:")
-        print(df[df["Plate"] == plate_to_update])  # Debugging output
+        print("✅ Updated DataFrame BEFORE saving:")
+        print(df[df["Plate"] == plate_to_update])
 
-        # Save changes to Excel
-        df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
+        # ✅ Force overwrite and explicitly close the file
+        with pd.ExcelWriter(HARM_DRIVE_FILE, engine="openpyxl", mode="w") as writer:
+            df.to_excel(writer, index=False)
 
-        # ✅ Double-check if update was successful
+        print(f"📁 Data successfully written to {HARM_DRIVE_FILE}")
+
+        # ✅ Re-read the Excel file to verify the change
         df_check = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
         saved_date = df_check.loc[df_check["Plate"] == plate_to_update, "Rego Renewal Date"].values[0]
 
         if saved_date == new_rego_renewal_date:
-            print(f"✅ Verified: Rego Renewal Date successfully updated for {plate_to_update}")
+            print(f"✅ Verified: Date successfully updated in Excel for {plate_to_update}")
         else:
-            print(f"❌ Warning: Mismatch in saved date! Expected {new_rego_renewal_date}, but got {saved_date}")
+            print(f"❌ Mismatch detected: Expected {new_rego_renewal_date}, but found {saved_date}")
 
         flash(f"Vehicle with plate {plate_to_update} updated successfully!", "success")
 
