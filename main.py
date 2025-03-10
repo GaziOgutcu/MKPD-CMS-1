@@ -6,6 +6,9 @@ from flask import Flask, render_template, send_from_directory, request, redirect
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from functools import wraps
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
 
 # Initialize Flask app
 app = Flask(__name__, template_folder='Templates')
@@ -22,13 +25,6 @@ PASSWORD = os.getenv("ADMIN_PASSWORD", "default_fallback_password")
 # Define Base Directory
 BASE_DIR = os.getcwd()
 
-# File Paths
-EXCEL_FILE = os.path.join(BASE_DIR, "CompanyData.xlsx")
-MAIN_DIR = os.path.join(BASE_DIR, "CompanyFolders")
-EMPLOYEE_FILE = os.path.join(BASE_DIR, "employees.xlsx")
-HARM_DRIVE_FILE = os.path.join(BASE_DIR, "HarmDriveData.xlsx")
-PROJECTS_FILE = os.path.join(BASE_DIR, "projects.xlsx")
-
 # Allowed File Extensions
 ALLOWED_EXTENSIONS = {"pdf", "docx", "jpg", "jpeg", "png"}
 
@@ -41,6 +37,43 @@ WAHOO_VEHICLES_FILE = "wahoo_pool_vehicles.xlsx"
 
 # Load environment variables
 load_dotenv()
+
+
+# ✅ Configure PostgreSQL Database for Railway
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("❌ DATABASE_URL is not set! Make sure it's configured in Railway.")
+
+# ✅ Fix PostgreSQL SSL Mode Issue
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")
+
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+
+# ✅ Initialize Database
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+# Secure Environment Variables
+PASSWORD = os.getenv("ADMIN_PASSWORD", "default_fallback_password")
+
+# ✅ Database Model (Replaces Excel)
+class Vehicle(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    plate = db.Column(db.String(10), unique=True, nullable=False)
+    type = db.Column(db.String(50), nullable=False)
+    vin = db.Column(db.String(50), unique=True, nullable=False)
+    rego_renewal_date = db.Column(db.String(20), nullable=False)
+    insurance_renewal_date = db.Column(db.String(20), nullable=True)
+    expiry = db.Column(db.Integer, nullable=True)
+    value = db.Column(db.Float, nullable=True)
+    transfer_fee = db.Column(db.Float, nullable=True)
+
+    def __repr__(self):
+        return f"<Vehicle {self.plate}>"
+
 
 
 logo_filename = "default_logo.png"  # Ensure it has a default value
@@ -57,53 +90,6 @@ if not os.path.exists(PROJECTS_FILE):
 
 print(f"🔹 DEBUG: Current Admin Password: {PASSWORD}")
 
-
-# Utility function to initialize Excel files if they don't exist
-def initialize_excel_file(file_path, columns):
-    """
-    Initialize an Excel file with the given columns if it doesn't exist.
-    :param file_path: Path to the Excel file
-    :param columns: List of column names for the Excel file
-    """
-    try:
-        if not os.path.exists(file_path):
-            pd.DataFrame(columns=columns).to_excel(file_path, index=False, engine="openpyxl")
-    except Exception as e:
-        print(f"Error initializing file {file_path}: {e}")
-        exit(1)
-
-# Ensure environment setup
-def setup_environment():
-    """
-    Ensure all required directories and Excel files are initialized.
-    """
-    try:
-        # Create the main directory if it doesn't exist
-        os.makedirs(MAIN_DIR, exist_ok=True)
-
-        # Initialize required Excel files
-        initialize_excel_file(
-            EXCEL_FILE,
-            [
-                "Company Name", "Registration Date", "ABN", "ACN",
-                "Type", "Registered Address", "QBCC License Number", "Documents"
-            ]
-        )
-        initialize_excel_file(
-            EMPLOYEE_FILE,
-            ["Name", "Family Name", "TFN", "ABN", "Address", "Email", "Phone"]
-        )
-        initialize_excel_file(
-            HARM_DRIVE_FILE,
-            ["Plate", "Type", "VIN", "Rego Renewal Date", "Insurance Renewal (CTP) Date", "Expiry", "Value", "Transfer Fee"]
-        )
-        initialize_excel_file(
-            PROJECTS_FILE,
-            ["Project Name", "Description", "Start Date", "End Date"]
-        )
-    except PermissionError:
-        print(f"Permission denied: Cannot create or write to required files.")
-        exit(1)  # Exit gracefully if permissions are insufficient
 
 # Utility to check allowed file extensions
 def allowed_file(filename):
@@ -230,12 +216,9 @@ def index():
         news_items = get_qld_construction_news()
 
         # Vehicles logic (unchanged)
-        if os.path.exists(HARM_DRIVE_FILE):
-            df = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
-            today = datetime.today()
-            df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], format="%d/%m/%Y", errors="coerce")
-            df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: (x - today).days if pd.notnull(x) else None)
-            vehicles = df[df["Expiry"].notnull() & (df["Expiry"] <= 50)][["Plate", "Type", "Expiry"]].to_dict(orient="records")
+        # ✅ Fetch all vehicles from PostgreSQL
+        vehicles = Vehicle.query.all()
+
 
         # Pagination Logic
         PER_PAGE = 5  # 5 news items per page
@@ -273,227 +256,72 @@ def setup_harm_drive_file():
         print("HarmDriveData.xlsx created.")
 
 
-@app.route("/harm_drive", methods=["GET", "POST"])
+# ✅ Fetch All Vehicles (Replaces Pandas Read Excel)
+@app.route("/harm_drive")
 @login_required
 def harm_drive():
+    vehicles = Vehicle.query.all()  # Fetch all vehicles from PostgreSQL
+    return render_template("harm_drive.html", vehicles=vehicles)
+
+# ✅ Add New Vehicle (Replaces Pandas Excel Handling)
+@app.route("/add_vehicle", methods=["POST"])
+@login_required
+def add_vehicle():
     try:
-        # Load the data from the Harm Drive Excel file or create one if it doesn't exist
-        if not os.path.exists(HARM_DRIVE_FILE):
-            pd.DataFrame(columns=[
-                "Plate", "Type", "VIN", "Rego Renewal Date",
-                "Insurance Renewal (CTP) Date", "Value", "Transfer Fee", "Expiry"
-            ]).to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
-
-        df = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
-
-        # Ensure necessary columns exist
-        required_columns = [
-            "Plate", "Type", "VIN", "Rego Renewal Date",
-            "Insurance Renewal (CTP) Date", "Value", "Transfer Fee", "Expiry"
-        ]
-        for column in required_columns:
-            if column not in df.columns:
-                df[column] = None
-
-        # Format dates to DD/MM/YYYY
-        def format_date_ddmmyyyy(date):
-            if pd.notnull(date):
-                return pd.to_datetime(date, dayfirst=True).strftime("%d/%m/%Y")
-            return None
-
-        # Calculate expiry days
-        def calculate_expiry(rego_date):
-            """
-            Calculate the number of days until a given date.
-            :param rego_date: Rego renewal date in 'DD/MM/YYYY' format.
-            :return: Number of days until the date or None if invalid.
-            """
-            try:
-                today = datetime.today()
-                rego_date = pd.to_datetime(rego_date, format="%d/%m/%Y", errors="coerce")  # ✅ Ensure correct parsing
-                return (rego_date - today).days
-            except Exception:
-                return None
-
-
-        # Apply date formatting and expiry calculations
-        df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], format="%d/%m/%Y", errors="coerce").dt.strftime("%d/%m/%Y")
-        df["Insurance Renewal (CTP) Date"] = pd.to_datetime(df["Insurance Renewal (CTP) Date"], format="%d/%m/%Y", errors="coerce").dt.strftime("%d/%m/%Y")
-        df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: calculate_expiry(x) if pd.notnull(x) else None)
-
-
-        # Convert DataFrame to a list of dictionaries for rendering
-        vehicles = df.to_dict(orient="records")
-
-        # Handle POST requests for adding, updating, or deleting vehicles
-        if request.method == "POST":
-            action = request.form.get("action")
-
-            if action == "add":
-                try:
-                    new_vehicle = {
-                        "Plate": request.form["plate"].strip(),
-                        "Type": request.form["type"].strip(),
-                        "VIN": request.form["vin"].strip(),
-                        "Rego Renewal Date": request.form["rego_renewal_date"].strip(),
-                        "Insurance Renewal (CTP) Date": request.form.get("ctp_date", "").strip(),
-                        "Value": float(request.form["value"]),
-                        "Transfer Fee": float(request.form.get("transfer_fee", 0)),
-                        "Expiry": None  # Will be recalculated
-                    }
-                    df = pd.concat([df, pd.DataFrame([new_vehicle])], ignore_index=True)
-                    df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], errors="coerce").dt.strftime("%d/%m/%Y")
-                    df["Insurance Renewal (CTP) Date"] = pd.to_datetime(df["Insurance Renewal (CTP) Date"], errors="coerce").dt.strftime("%d/%m/%Y")
-                    df["Expiry"] = df["Rego Renewal Date"].apply(
-                        lambda x: calculate_expiry(x) if pd.notnull(x) else None
-                    )
-                    df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
-                    flash("Vehicle added successfully!", "success")
-                except Exception as e:
-                    flash(f"Error adding vehicle: {e}", "error")
-
-            elif action == "delete":
-                try:
-                    plate_to_delete = request.form["plate_to_delete"].strip()
-                    if plate_to_delete in df["Plate"].values:
-                        df = df[df["Plate"] != plate_to_delete]
-                        df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
-                        flash(f"Vehicle with plate {plate_to_delete} deleted successfully!", "success")
-                    else:
-                        flash(f"Vehicle with plate {plate_to_delete} not found.", "error")
-                except Exception as e:
-                    flash(f"Error deleting vehicle: {e}", "error")
-
-            elif action == "update":
-                try:
-                    plate_to_update = request.form["plate_to_update"].strip()
-                    rego_renewal = request.form["rego_renewal_update"].strip()
-                    if plate_to_update in df["Plate"].values:
-                        df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = rego_renewal
-                        df["Rego Renewal Date"] = pd.to_datetime(df["Rego Renewal Date"], format="%d/%m/%Y", errors="coerce").dt.strftime("%d/%m/%Y")
-                        df["Expiry"] = df["Rego Renewal Date"].apply(
-                            lambda x: calculate_expiry(x) if pd.notnull(x) else None
-                        )
-                        df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
-                        flash(f"Vehicle with plate {plate_to_update} updated successfully!", "success")
-                    else:
-                        flash(f"Vehicle with plate {plate_to_update} not found.", "error")
-                except Exception as e:
-                    flash(f"Error updating vehicle: {e}", "error")
-
-        # Render the harm_drive template with the vehicle data
-        return render_template("harm_drive.html", title="Harm Drive Pty Ltd", vehicles=vehicles)
-
+        new_vehicle = Vehicle(
+            plate=request.form["plate"].strip(),
+            type=request.form["type"].strip(),
+            vin=request.form["vin"].strip(),
+            rego_renewal_date=request.form["rego_renewal_date"].strip(),
+            insurance_renewal_date=request.form.get("ctp_date", "").strip(),
+            value=float(request.form["value"]),
+            transfer_fee=float(request.form.get("transfer_fee", 0))
+        )
+        db.session.add(new_vehicle)
+        db.session.commit()
+        flash("Vehicle added successfully!", "success")
     except Exception as e:
-        flash(f"Error processing Harm Drive Pty Ltd data: {e}", "error")
-        return redirect(url_for("index"))
+        flash(f"Error adding vehicle: {e}", "error")
 
+    return redirect(url_for("harm_drive"))
 
-
+# ✅ Update a Vehicle’s Registration Date
 @app.route("/update_vehicle", methods=["POST"])
 @login_required
 def update_vehicle():
     try:
         plate_to_update = request.form["plate_to_update"].strip()
-        new_rego_renewal_date = request.form["new_rego_renewal_date"].strip()
+        new_date = request.form["new_rego_renewal_date"].strip()
 
-        print(f"🔹 Update requested for plate: {plate_to_update} with new date: {new_rego_renewal_date}")
-
-        # Load existing data
-        df = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
-
-        if plate_to_update not in df["Plate"].values:
-            print(f"❌ Error: Plate {plate_to_update} not found in the Excel file.")
-            flash(f"Vehicle with plate {plate_to_update} not found.", "error")
-            return redirect(url_for("harm_drive"))
-
-        print(f"✅ Plate {plate_to_update} found. Proceeding with update.")
-
-        # Convert new date to proper format
-        new_rego_renewal_date = pd.to_datetime(new_rego_renewal_date, errors="coerce", dayfirst=True).strftime("%d/%m/%Y")
-
-        # Update the corresponding row
-        df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = new_rego_renewal_date
-
-        # Recalculate Expiry
-        today = datetime.today()
-        df["Expiry"] = df["Rego Renewal Date"].apply(
-            lambda x: (pd.to_datetime(x, format="%d/%m/%Y", errors="coerce") - today).days if pd.notnull(x) else None
-        )
-
-        print("✅ Updated DataFrame BEFORE saving:")
-        print(df[df["Plate"] == plate_to_update])
-
-        # ✅ Force overwrite and explicitly close the file
-        with pd.ExcelWriter(HARM_DRIVE_FILE, engine="openpyxl", mode="w") as writer:
-            df.to_excel(writer, index=False)
-
-        print(f"📁 Data successfully written to {HARM_DRIVE_FILE}")
-
-        # ✅ Re-read the Excel file to verify the change
-        df_check = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
-        saved_date = df_check.loc[df_check["Plate"] == plate_to_update, "Rego Renewal Date"].values[0]
-
-        if saved_date == new_rego_renewal_date:
-            print(f"✅ Verified: Date successfully updated in Excel for {plate_to_update}")
+        vehicle = Vehicle.query.filter_by(plate=plate_to_update).first()
+        if vehicle:
+            vehicle.rego_renewal_date = new_date
+            db.session.commit()
+            flash(f"Vehicle {plate_to_update} updated successfully!", "success")
         else:
-            print(f"❌ Mismatch detected: Expected {new_rego_renewal_date}, but found {saved_date}")
-
-        flash(f"Vehicle with plate {plate_to_update} updated successfully!", "success")
-
-        return redirect(url_for("harm_drive"))
-
+            flash(f"Vehicle {plate_to_update} not found!", "error")
     except Exception as e:
-        print(f"❌ Error updating vehicle: {e}")
         flash(f"Error updating vehicle: {e}", "error")
-        return redirect(url_for("harm_drive"))
 
-
-
-
-@app.route('/add_vehicle', methods=['POST'])
-@login_required
-def add_vehicle():
-    try:
-        plate = request.form['plate'].strip()
-        type_ = request.form['type'].strip()
-        vin = request.form['vin'].strip()
-        rego_renewal_date = request.form['rego_renewal_date'].strip()
-        ctp_date = request.form.get('ctp_date', '').strip()
-        value = request.form['value'].strip()
-        transfer_fee = request.form.get('transfer_fee', '').strip()
-
-        new_vehicle = {
-            "Plate": plate,
-            "Type": type_,
-            "VIN": vin,
-            "Rego Renewal Date": rego_renewal_date,
-            "Insurance Renewal (CTP) Date": ctp_date,
-            "Expiry": None,
-            "Value": value,
-            "Transfer Fee": transfer_fee
-        }
-
-        df = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
-        df = pd.concat([df, pd.DataFrame([new_vehicle])], ignore_index=True)
-        df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
-        flash("Vehicle added successfully!", "success")
-    except Exception as e:
-        flash(f"Error adding vehicle: {e}", "error")
     return redirect(url_for("harm_drive"))
 
-@app.route('/delete_vehicle', methods=['POST'])
+# ✅ Delete a Vehicle
+@app.route("/delete_vehicle", methods=["POST"])
 @login_required
 def delete_vehicle():
     try:
-        plate = request.form['plate_to_delete'].strip()
+        plate_to_delete = request.form["plate_to_delete"].strip()
+        vehicle = Vehicle.query.filter_by(plate=plate_to_delete).first()
 
-        df = pd.read_excel(HARM_DRIVE_FILE, engine="openpyxl")
-        df = df[df['Plate'] != plate]
-        df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
-        flash(f"Vehicle with plate {plate} deleted successfully!", "success")
+        if vehicle:
+            db.session.delete(vehicle)
+            db.session.commit()
+            flash(f"Vehicle {plate_to_delete} deleted successfully!", "success")
+        else:
+            flash(f"Vehicle {plate_to_delete} not found!", "error")
     except Exception as e:
         flash(f"Error deleting vehicle: {e}", "error")
+
     return redirect(url_for("harm_drive"))
 
 
@@ -537,35 +365,22 @@ def wahoo_vehicles():
 @login_required
 def add_wahoo_vehicle():
     try:
-        plate = request.form["plate"].strip()
-        type_ = request.form["type"].strip()
-        vin = request.form["vin"].strip()
-        rego_renewal_date = request.form["rego_renewal_date"].strip()
-        ctp_date = request.form.get("ctp_date", "").strip()
-        value = request.form["value"].strip()
-        transfer_fee = request.form.get("transfer_fee", "").strip()
-
-        df = pd.read_excel(WAHOO_VEHICLES_FILE, engine="openpyxl")
-
-        new_vehicle = {
-            "Plate": plate,
-            "Type": type_,
-            "VIN": vin,
-            "Rego Renewal Date": rego_renewal_date,
-            "Insurance Renewal (CTP) Date": ctp_date,
-            "Expiry": calculate_expiry(rego_renewal_date),
-            "Value": value,
-            "Transfer Fee": transfer_fee
-        }
-
-        df = pd.concat([df, pd.DataFrame([new_vehicle])], ignore_index=True)
-        df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
-
+        new_vehicle = Vehicle(
+            plate=request.form["plate"].strip(),
+            type=request.form["type"].strip(),
+            vin=request.form["vin"].strip(),
+            rego_renewal_date=request.form["rego_renewal_date"].strip(),
+            insurance_renewal_date=request.form.get("ctp_date", "").strip(),
+            value=float(request.form["value"]),
+            transfer_fee=float(request.form.get("transfer_fee", 0))
+        )
+        db.session.add(new_vehicle)
+        db.session.commit()
         flash("✅ Vehicle added successfully!", "success")
     except Exception as e:
-        flash(f"⚠️ Error adding vehicle: {e}", "error")
+        flash(f"Error adding vehicle: {e}", "error")
+    return redirect(url_for("harm_drive"))
 
-    return redirect(url_for("wahoo_vehicles"))
 
 @app.route("/update_wahoo_vehicle", methods=["POST"])
 @login_required
