@@ -29,10 +29,6 @@ for var in REQUIRED_ENV_VARS:
         raise ValueError(f"❌ Missing environment variable: {var}")
 
 
-# Secure Environment Variables
-PASSWORD = os.getenv("ADMIN_PASSWORD", "default_fallback_password")
-
-
 # Allowed File Extensions
 ALLOWED_EXTENSIONS = {"pdf", "docx", "jpg", "jpeg", "png"}
 
