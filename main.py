@@ -10,6 +10,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_caching import Cache
 
+# Load environment variables
+load_dotenv()
+
+EXCEL_FILE = os.path.join(BASE_DIR, "companies.xlsx")
+EMPLOYEE_FILE = os.path.join(BASE_DIR, "employees.xlsx")
+HARM_DRIVE_FILE = os.path.join(BASE_DIR, "HarmDriveData.xlsx")
+
+
 # Define Base Directory
 BASE_DIR = os.getcwd()
 
@@ -39,21 +47,18 @@ os.makedirs(PROJECT_IMAGES_DIR, exist_ok=True)  # Ensure it exists
 # File path for Wahoo Pool Vehicles
 WAHOO_VEHICLES_FILE = "wahoo_pool_vehicles.xlsx"
 
-# Load environment variables
-load_dotenv()
-
 
 # ✅ Configure PostgreSQL Database for Railway
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("❌ DATABASE_URL is not set! Make sure it's configured in Railway.")
 
-# ✅ Fix PostgreSQL SSL Mode Issue
 if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")  # ✅ Fix for PostgreSQL
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 
 #NEWS FETCH CACHE
 cache = Cache(app, config={"CACHE_TYPE": "simple"})
@@ -552,10 +557,10 @@ def harm_drive():
 def add_vehicle():
     try:
         # Get form data
-        plate = request.form["plate"].strip()
-        vehicle_type = request.form["type"].strip()
-        vin = request.form["vin"].strip()
-        
+        plate = request.form.get("plate", "").strip()
+        vehicle_type = request.form.get("type", "").strip()
+        vin = request.form.get("vin", "").strip()
+
         # Validate data
         if not plate or not vehicle_type or not vin:
             flash("All fields are required", "error")
