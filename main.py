@@ -13,13 +13,12 @@ from flask_caching import Cache
 # Load environment variables
 load_dotenv()
 
+# Define Base Directory
+BASE_DIR = os.getcwd()
+
 EXCEL_FILE = os.path.join(BASE_DIR, "companies.xlsx")
 EMPLOYEE_FILE = os.path.join(BASE_DIR, "employees.xlsx")
 HARM_DRIVE_FILE = os.path.join(BASE_DIR, "HarmDriveData.xlsx")
-
-
-# Define Base Directory
-BASE_DIR = os.getcwd()
 
 # Initialize Flask app
 app = Flask(__name__, template_folder='Templates')
