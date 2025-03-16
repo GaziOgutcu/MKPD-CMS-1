@@ -84,6 +84,36 @@ class Vehicle(db.Model):
     def __repr__(self):
         return f"<Vehicle {self.plate}>"
 
+# Models for all your data types
+class Company(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    registration_date = db.Column(db.Date, nullable=False)
+    abn = db.Column(db.String(11), unique=True, nullable=False)
+    acn = db.Column(db.String(9), nullable=True)
+    company_type = db.Column(db.String(50), nullable=True)
+    registered_address = db.Column(db.String(255), nullable=True)
+    qbcc_license_number = db.Column(db.String(50), nullable=True)
+    document_folder = db.Column(db.String(255), nullable=False)
+
+class Employee(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    family_name = db.Column(db.String(100), nullable=False)
+    tfn = db.Column(db.String(20), nullable=True)
+    abn = db.Column(db.String(11), nullable=True)
+    address = db.Column(db.String(255), nullable=True)
+    email = db.Column(db.String(100), nullable=True)
+    phone = db.Column(db.String(20), nullable=True)
+
+class Project(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    image_filename = db.Column(db.String(255), nullable=True)
+
 # Define Base Directory
 MAIN_DIR = os.path.join(BASE_DIR, "CompanyFolders")
 os.makedirs(MAIN_DIR, exist_ok=True)  # Ensure it exists
@@ -184,6 +214,253 @@ def get_qld_construction_news():
         print(f"Error parsing response JSON: {e}")
         return []
 
+def migrate_excel_to_db():
+    """Script to migrate data from Excel files to PostgreSQL database."""
+    
+    print("Starting migration from Excel to PostgreSQL database...")
+    
+    # Migrate Companies
+    if os.path.exists(EXCEL_FILE):
+        try:
+            print(f"Migrating companies from {EXCEL_FILE}...")
+            companies_df = pd.read_excel(EXCEL_FILE, engine="openpyxl")
+            
+            companies_count = 0
+            for _, row in companies_df.iterrows():
+                # Check if company already exists
+                existing_company = Company.query.filter_by(abn=str(row['ABN'])).first()
+                if existing_company:
+                    print(f"  ⚠️ Company with ABN {row['ABN']} already exists, skipping...")
+                    continue
+                    
+                # Parse date safely
+                try:
+                    if pd.notna(row['Registration Date']):
+                        if isinstance(row['Registration Date'], str):
+                            reg_date = datetime.strptime(row['Registration Date'], '%Y-%m-%d')
+                        else:  # If it's already a datetime
+                            reg_date = row['Registration Date']
+                    else:
+                        reg_date = None
+                except Exception as e:
+                    print(f"  ⚠️ Date conversion error for {row['Company Name']}: {e}")
+                    reg_date = None
+                
+                company = Company(
+                    name=str(row['Company Name']),
+                    registration_date=reg_date,
+                    abn=str(row['ABN']),
+                    acn=str(row['ACN']) if pd.notna(row.get('ACN', None)) else None,
+                    company_type=str(row['Type']) if pd.notna(row.get('Type', None)) else None,
+                    registered_address=str(row['Registered Address']) if pd.notna(row.get('Registered Address', None)) else None,
+                    qbcc_license_number=str(row['QBCC License Number']) if pd.notna(row.get('QBCC License Number', None)) else None,
+                    document_folder=str(row['Documents']) if pd.notna(row.get('Documents', None)) else None
+                )
+                db.session.add(company)
+                companies_count += 1
+                
+                # Commit in batches to avoid memory issues
+                if companies_count % 50 == 0:
+                    db.session.commit()
+                    print(f"  ✅ Committed {companies_count} companies so far")
+            
+            # Final commit
+            db.session.commit()
+            print(f"✅ {companies_count} companies migrated successfully")
+        except Exception as e:
+            print(f"❌ Error migrating companies: {e}")
+            db.session.rollback()
+    else:
+        print(f"⚠️ Companies file not found: {EXCEL_FILE}")
+    
+    # Migrate Employees
+    if os.path.exists(EMPLOYEE_FILE):
+        try:
+            print(f"Migrating employees from {EMPLOYEE_FILE}...")
+            employees_df = pd.read_excel(EMPLOYEE_FILE, engine="openpyxl")
+            
+            employees_count = 0
+            for _, row in employees_df.iterrows():
+                # Check if employee already exists (by name and family name for simplicity)
+                existing_employee = Employee.query.filter_by(
+                    name=str(row['Name']), 
+                    family_name=str(row['Family Name'])
+                ).first()
+                
+                if existing_employee:
+                    print(f"  ⚠️ Employee {row['Name']} {row['Family Name']} already exists, skipping...")
+                    continue
+                
+                employee = Employee(
+                    name=str(row['Name']),
+                    family_name=str(row['Family Name']),
+                    tfn=str(row['TFN']) if pd.notna(row.get('TFN', None)) else None,
+                    abn=str(row['ABN']) if pd.notna(row.get('ABN', None)) else None,
+                    address=str(row['Address']) if pd.notna(row.get('Address', None)) else None,
+                    email=str(row['Email']) if pd.notna(row.get('Email', None)) else None,
+                    phone=str(row['Phone']) if pd.notna(row.get('Phone', None)) else None
+                )
+                db.session.add(employee)
+                employees_count += 1
+                
+                # Commit in batches
+                if employees_count % 50 == 0:
+                    db.session.commit()
+                    print(f"  ✅ Committed {employees_count} employees so far")
+            
+            # Final commit
+            db.session.commit()
+            print(f"✅ {employees_count} employees migrated successfully")
+        except Exception as e:
+            print(f"❌ Error migrating employees: {e}")
+            db.session.rollback()
+    else:
+        print(f"⚠️ Employees file not found: {EMPLOYEE_FILE}")
+    
+    # Migrate Projects
+    if os.path.exists(PROJECTS_FILE):
+        try:
+            print(f"Migrating projects from {PROJECTS_FILE}...")
+            projects_df = pd.read_excel(PROJECTS_FILE, engine="openpyxl")
+            
+            projects_count = 0
+            for _, row in projects_df.iterrows():
+                # Check if project already exists
+                existing_project = Project.query.filter_by(name=str(row['Project Name'])).first()
+                if existing_project:
+                    print(f"  ⚠️ Project {row['Project Name']} already exists, skipping...")
+                    continue
+                
+                # Parse dates safely
+                try:
+                    if pd.notna(row['Start Date']):
+                        if isinstance(row['Start Date'], str):
+                            start_date = datetime.strptime(row['Start Date'], '%Y-%m-%d')
+                        else:
+                            start_date = row['Start Date']
+                    else:
+                        start_date = None
+                        
+                    if pd.notna(row['End Date']):
+                        if isinstance(row['End Date'], str):
+                            end_date = datetime.strptime(row['End Date'], '%Y-%m-%d')
+                        else:
+                            end_date = row['End Date']
+                    else:
+                        end_date = None
+                except Exception as e:
+                    print(f"  ⚠️ Date conversion error for project {row['Project Name']}: {e}")
+                    start_date = None
+                    end_date = None
+                
+                project = Project(
+                    name=str(row['Project Name']),
+                    description=str(row['Description']),
+                    start_date=start_date,
+                    end_date=end_date,
+                    image_filename=str(row['Image Filename']) if pd.notna(row.get('Image Filename', None)) else None
+                )
+                db.session.add(project)
+                projects_count += 1
+                
+                # Commit in batches
+                if projects_count % 50 == 0:
+                    db.session.commit()
+                    print(f"  ✅ Committed {projects_count} projects so far")
+            
+            # Final commit
+            db.session.commit()
+            print(f"✅ {projects_count} projects migrated successfully")
+        except Exception as e:
+            print(f"❌ Error migrating projects: {e}")
+            db.session.rollback()
+    else:
+        print(f"⚠️ Projects file not found: {PROJECTS_FILE}")
+    
+    # Migrate Vehicles from both vehicle files
+    vehicle_files = []
+    if os.path.exists(WAHOO_VEHICLES_FILE):
+        vehicle_files.append(("Wahoo", WAHOO_VEHICLES_FILE))
+    if os.path.exists(HARM_DRIVE_FILE):
+        vehicle_files.append(("HarmDrive", HARM_DRIVE_FILE))
+    
+    vehicles_count = 0
+    for source, file_path in vehicle_files:
+        try:
+            print(f"Migrating vehicles from {file_path}...")
+            vehicles_df = pd.read_excel(file_path, engine="openpyxl")
+            
+            for _, row in vehicles_df.iterrows():
+                # Skip if vehicle already exists
+                existing_vehicle = Vehicle.query.filter_by(plate=str(row['Plate'])).first()
+                if existing_vehicle:
+                    print(f"  ⚠️ Vehicle with plate {row['Plate']} already exists, skipping...")
+                    continue
+                
+                # Convert date formats
+                try:
+                    if pd.notna(row['Rego Renewal Date']):
+                        # Handle different date formats
+                        if isinstance(row['Rego Renewal Date'], str):
+                            if '/' in row['Rego Renewal Date']:
+                                rego_date = datetime.strptime(row['Rego Renewal Date'], '%d/%m/%Y').strftime('%Y-%m-%d')
+                            else:
+                                rego_date = row['Rego Renewal Date']
+                        else:
+                            rego_date = row['Rego Renewal Date'].strftime('%Y-%m-%d')
+                    else:
+                        rego_date = None
+                        
+                    # Similar for insurance date if it exists
+                    insurance_date = None
+                    ins_column = 'Insurance Renewal (CTP) Date'
+                    if ins_column in row and pd.notna(row[ins_column]):
+                        if isinstance(row[ins_column], str):
+                            if '/' in row[ins_column]:
+                                insurance_date = datetime.strptime(row[ins_column], '%d/%m/%Y').strftime('%Y-%m-%d')
+                            else:
+                                insurance_date = row[ins_column]
+                        else:
+                            insurance_date = row[ins_column].strftime('%Y-%m-%d')
+                except Exception as e:
+                    print(f"  ⚠️ Date conversion error for vehicle {row['Plate']}: {e}")
+                    rego_date = None
+                    insurance_date = None
+                
+                # Create vehicle object
+                vehicle = Vehicle(
+                    plate=str(row['Plate']),
+                    type=str(row['Type']),
+                    vin=str(row['VIN']),
+                    rego_renewal_date=rego_date,
+                    insurance_renewal_date=insurance_date,
+                    expiry=int(row['Expiry']) if pd.notna(row.get('Expiry', None)) else None,
+                    value=float(row['Value']) if pd.notna(row.get('Value', None)) else None,
+                    transfer_fee=float(row['Transfer Fee']) if pd.notna(row.get('Transfer Fee', None)) else None
+                )
+                db.session.add(vehicle)
+                vehicles_count += 1
+                
+                # Commit in batches
+                if vehicles_count % 50 == 0:
+                    db.session.commit()
+                    print(f"  ✅ Committed {vehicles_count} vehicles so far")
+            
+        except Exception as e:
+            print(f"❌ Error migrating vehicles from {source}: {e}")
+            db.session.rollback()
+    
+    # Final commit for vehicles
+    try:
+        db.session.commit()
+        print(f"✅ {vehicles_count} vehicles migrated successfully")
+    except Exception as e:
+        print(f"❌ Error in final vehicle commit: {e}")
+        db.session.rollback()
+    
+    print("Migration complete!")
+
+
 # ✅ Route to serve the Navbar file
 @app.route("/navbar")
 def navbar():
@@ -228,23 +505,20 @@ def index():
         vehicles = []
         news_items = get_qld_construction_news()
 
-        # Vehicles logic (unchanged)
-        # ✅ Fetch all vehicles from PostgreSQL
+        # Vehicles logic
         vehicles = Vehicle.query.all()
-
 
         # Pagination Logic
         PER_PAGE = 5  # 5 news items per page
-        page = page = max(1, min(page, total_pages))  # Ensure page is within valid range
+        page = request.args.get('page', 1, type=int)  # Get page from query params
         total_pages = (len(news_items) + PER_PAGE - 1) // PER_PAGE
+        page = max(1, min(page, total_pages))  # Ensure page is within valid range
         paginated_news = news_items[(page - 1) * PER_PAGE: page * PER_PAGE]
 
         return render_template("index.html", vehicles=vehicles, news_items=paginated_news, page=page, total_pages=total_pages)
-
     except Exception as e:
         flash(f"Error loading data: {e}", "error")
         return render_template("index.html", vehicles=[], news_items=[], page=1, total_pages=1)
-
 
 
 @app.route("/CompanyFolders/<path:filename>")
@@ -281,10 +555,27 @@ def harm_drive():
 @login_required
 def add_vehicle():
     try:
+        # Get form data
+        plate = request.form["plate"].strip()
+        vehicle_type = request.form["type"].strip()
+        vin = request.form["vin"].strip()
+        
+        # Validate data
+        if not plate or not vehicle_type or not vin:
+            flash("All fields are required", "error")
+            return redirect(url_for("harm_drive"))
+            
+        # Check if vehicle already exists
+        existing = Vehicle.query.filter_by(plate=plate).first()
+        if existing:
+            flash("Vehicle with this plate already exists", "error")
+            return redirect(url_for("harm_drive"))
+        
+        # Create new vehicle
         new_vehicle = Vehicle(
-            plate=request.form["plate"].strip(),
-            type=request.form["type"].strip(),
-            vin=request.form["vin"].strip(),
+            plate=plate,
+            type=vehicle_type,
+            vin=vin,
             rego_renewal_date=request.form["rego_renewal_date"].strip(),
             insurance_renewal_date=request.form.get("ctp_date", "").strip(),
             value=float(request.form["value"]),
@@ -293,6 +584,10 @@ def add_vehicle():
         db.session.add(new_vehicle)
         db.session.commit()
         flash("Vehicle added successfully!", "success")
+    except KeyError as e:
+        flash(f"Missing required field: {e}", "error")
+    except ValueError as e:
+        flash(f"Invalid value provided: {e}", "error")
     except Exception as e:
         flash(f"Error adding vehicle: {e}", "error")
 
@@ -532,33 +827,25 @@ def add_company():
                 if file and file.filename and allowed_file(file.filename):
                     file.save(os.path.join(folder_path, secure_filename(file.filename)))
 
-
-            # Update the Excel file
-            if not os.path.exists(EXCEL_FILE):
-                flash("Company data file not found. Please create the file first.", "error")
+            # Check if company already exists
+            existing_company = Company.query.filter_by(abn=abn).first()
+            if existing_company:
+                flash("A company with this ABN already exists!", "error")
                 return redirect(url_for("add_company"))
 
-            df = pd.read_excel(EXCEL_FILE, engine="openpyxl")
-            if "Company Name" not in df.columns or "ABN" not in df.columns:
-                flash("Missing required columns in the data file.", "error")
-                return redirect(url_for("add_company"))
-
-            if any((df["Company Name"] == company_name) & (df["ABN"] == abn)):
-                flash("A company with this name and ABN already exists!", "error")
-                return redirect(url_for("add_company"))
-
-            new_row = {
-                "Company Name": company_name,
-                "Registration Date": registration_date,
-                "ABN": abn,
-                "ACN": acn,
-                "Type": company_type,
-                "Registered Address": registered_address,
-                "QBCC License Number": qbcc_license_number,
-                "Documents": folder_name,
-            }
-            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-            df.to_excel(EXCEL_FILE, index=False, engine="openpyxl")
+            # Create new company record in database
+            new_company = Company(
+                name=company_name,
+                registration_date=datetime.strptime(registration_date, '%Y-%m-%d'),
+                abn=abn,
+                acn=acn,
+                company_type=company_type,
+                registered_address=registered_address,
+                qbcc_license_number=qbcc_license_number,
+                document_folder=folder_name
+            )
+            db.session.add(new_company)
+            db.session.commit()
 
             flash("Company added successfully!", "success")
             return redirect(url_for("view_company"))
