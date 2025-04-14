@@ -72,14 +72,17 @@ def login_required(f):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """Handle user login"""
     if request.method == "POST":
-        if request.form["password"] == PASSWORD:
+        password = request.form.get("password")
+        if password == PASSWORD:
             session["logged_in"] = True
-            flash("Login successful", "success")
+            flash("Login successful!", "success")
             return redirect(url_for("index"))
         else:
-            flash("Wrong password", "danger")
-    return render_template("login.html")
+            flash("Incorrect password. Try again.", "error")
+    return render_template("login.html", title="Login")
+
 
 @app.route("/logout")
 def logout():
