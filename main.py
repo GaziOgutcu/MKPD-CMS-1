@@ -24,15 +24,15 @@ BASE_DIR = os.getcwd()
 app = Flask(__name__, template_folder='Templates')
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret_key")
 
-# PostgreSQL configuration
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://localhost/myapp")
+# Get and adjust database URL
+DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")
+
+# Flask SQLAlchemy settings
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# SQLAlchemy engine and database setup
-engine = create_engine(DATABASE_URL)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
