@@ -9,67 +9,48 @@ from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_caching import Cache
+from sqlalchemy import create_engine
 
 # Load environment variables
 load_dotenv()
 
-# Define Base Directory
+# Base directory
 BASE_DIR = os.getcwd()
-
-EXCEL_FILE = os.path.join(BASE_DIR, "companies.xlsx")
-EMPLOYEE_FILE = os.path.join(BASE_DIR, "employees.xlsx")
-HARM_DRIVE_FILE = os.path.join(BASE_DIR, "HarmDriveData.xlsx")
 
 # Initialize Flask app
 app = Flask(__name__, template_folder='Templates')
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret_key")
 
-# print(f"Secret Key: {app.secret_key}")
-
-# print(app.jinja_loader.searchpath)
-
-PROJECTS_FILE = os.path.join(BASE_DIR, "projects.xlsx")
-
-REQUIRED_ENV_VARS = ["FLASK_SECRET_KEY", "ADMIN_PASSWORD", "DATABASE_URL"]
-for var in REQUIRED_ENV_VARS:
-    if not os.getenv(var):
-        raise ValueError(f"❌ Missing environment variable: {var}")
-
-
-# Allowed File Extensions
-ALLOWED_EXTENSIONS = {"pdf", "docx", "jpg", "jpeg", "png"}
-
-# Project Images Directory
-PROJECT_IMAGES_DIR = os.path.join(BASE_DIR, "static", "project_images")
-os.makedirs(PROJECT_IMAGES_DIR, exist_ok=True)  # Ensure it exists
-
-# File path for Wahoo Pool Vehicles
-WAHOO_VEHICLES_FILE = "wahoo_pool_vehicles.xlsx"
-
-
-# ✅ Configure PostgreSQL Database for Railway
+# PostgreSQL configuration
 DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise ValueError("❌ DATABASE_URL is not set! Make sure it's configured in Railway.")
-
 if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")  # ✅ Fix for PostgreSQL
-
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-
-#NEWS FETCH CACHE
-cache = Cache(app, config={"CACHE_TYPE": "simple"})
-
-# ✅ Initialize Database
+# SQLAlchemy engine and database setup
+engine = create_engine(DATABASE_URL)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# Secure Environment Variables
-PASSWORD = os.getenv("ADMIN_PASSWORD", "default_fallback_password")
+# Cache configuration
+cache = Cache(app, config={"CACHE_TYPE": "simple"})
 
-# ✅ Database Model (Replaces Excel)
+# File paths
+EMPLOYEE_FILE = os.path.join(BASE_DIR, "employees.xlsx")
+EXCEL_FILE = os.path.join(BASE_DIR, "companies.xlsx")
+PROJECTS_FILE = os.path.join(BASE_DIR, "projects.xlsx")
+HARM_DRIVE_FILE = os.path.join(BASE_DIR, "HarmDriveData.xlsx")
+WAHOO_VEHICLES_FILE = os.path.join(BASE_DIR, "wahoo_pool_vehicles.xlsx")
+
+# Allowed extensions
+ALLOWED_EXTENSIONS = {"pdf", "docx", "jpg", "jpeg", "png"}
+
+# Project images
+PROJECT_IMAGES_DIR = os.path.join(BASE_DIR, "static", "project_images")
+os.makedirs(PROJECT_IMAGES_DIR, exist_ok=True)
+
+# Model definitions
 class Vehicle(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     plate = db.Column(db.String(10), unique=True, nullable=False)
@@ -81,10 +62,6 @@ class Vehicle(db.Model):
     value = db.Column(db.Float, nullable=True)
     transfer_fee = db.Column(db.Float, nullable=True)
 
-    def __repr__(self):
-        return f"<Vehicle {self.plate}>"
-
-# Models for all your data types
 class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -113,6 +90,26 @@ class Project(db.Model):
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
     image_filename = db.Column(db.String(255), nullable=True)
+
+# Utility for file validation
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Utility to calculate expiry
+def calculate_expiry(rego_date):
+    try:
+        today = datetime.today()
+        rego_date = datetime.strptime(rego_date, '%Y-%m-%d')
+        return (rego_date - today).days
+    except Exception:
+        return None
+
+# Utility to format date
+def format_date_ddmmyyyy(date):
+    if pd.notnull(date):
+        return datetime.strptime(str(date), "%Y-%m-%d").strftime("%d/%m/%Y")
+    return None
+
 
 # Define Base Directory
 MAIN_DIR = os.path.join(BASE_DIR, "CompanyFolders")
