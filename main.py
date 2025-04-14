@@ -611,6 +611,18 @@ def download_file(company_folder, filename):
 
     return send_file(filepath, as_attachment=True)
 
+@app.route("/add_wahoo_vehicle", methods=["GET", "POST"])
+@login_required
+def add_wahoo_vehicle():
+    """Add a Wahoo pool vehicle - Basic form handler (to be expanded)"""
+    if request.method == "POST":
+        # TODO: Add logic to process the form submission
+        flash("Vehicle added (this is a placeholder).", "info")
+        return redirect(url_for("index"))
+
+    return render_template("add_wahoo_vehicle.html")
+
+
 # Initialize the application
 def init_app():
     """Initialize the application with default files"""
