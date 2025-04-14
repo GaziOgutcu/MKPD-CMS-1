@@ -354,12 +354,6 @@ def login():
             flash("Incorrect password. Try again.", "error")
     return render_template("login.html", title="Login")
 
-@app.route("/logout")
-def logout():
-    """Handle user logout"""
-    session.clear()
-    flash("You have been logged out.", "success")
-    return redirect(url_for("login"))
 
 @app.route("/")
 @login_required
