@@ -36,6 +36,9 @@ migrate = Migrate(app, db)
 # Cache configuration
 cache = Cache(app, config={"CACHE_TYPE": "simple"})
 
+# Load admin password
+PASSWORD = os.getenv("ADMIN_PASSWORD", "default_fallback_password")
+
 # File paths
 EMPLOYEE_FILE = os.path.join(BASE_DIR, "employees.xlsx")
 EXCEL_FILE = os.path.join(BASE_DIR, "companies.xlsx")
@@ -50,46 +53,21 @@ ALLOWED_EXTENSIONS = {"pdf", "docx", "jpg", "jpeg", "png"}
 PROJECT_IMAGES_DIR = os.path.join(BASE_DIR, "static", "project_images")
 os.makedirs(PROJECT_IMAGES_DIR, exist_ok=True)
 
-# Model definitions
-class Vehicle(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    plate = db.Column(db.String(10), unique=True, nullable=False)
-    type = db.Column(db.String(50), nullable=False)
-    vin = db.Column(db.String(50), unique=True, nullable=False)
-    rego_renewal_date = db.Column(db.String(20), nullable=False)
-    insurance_renewal_date = db.Column(db.String(20), nullable=True)
-    expiry = db.Column(db.Integer, nullable=True)
-    value = db.Column(db.Float, nullable=True)
-    transfer_fee = db.Column(db.Float, nullable=True)
+# Main directory for company folders
+MAIN_DIR = os.path.join(BASE_DIR, "CompanyFolders")
+os.makedirs(MAIN_DIR, exist_ok=True)
 
-class Company(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    registration_date = db.Column(db.Date, nullable=False)
-    abn = db.Column(db.String(11), unique=True, nullable=False)
-    acn = db.Column(db.String(9), nullable=True)
-    company_type = db.Column(db.String(50), nullable=True)
-    registered_address = db.Column(db.String(255), nullable=True)
-    qbcc_license_number = db.Column(db.String(50), nullable=True)
-    document_folder = db.Column(db.String(255), nullable=False)
+# Logo path setup
+logo_filename = "default_logo.png"
+logo_path = os.path.join(BASE_DIR, "static", "logos", logo_filename)
+if os.path.exists(logo_path):
+    print(f"✅ Logo found: {logo_path}")
 
-class Employee(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    family_name = db.Column(db.String(100), nullable=False)
-    tfn = db.Column(db.String(20), nullable=True)
-    abn = db.Column(db.String(11), nullable=True)
-    address = db.Column(db.String(255), nullable=True)
-    email = db.Column(db.String(100), nullable=True)
-    phone = db.Column(db.String(20), nullable=True)
+# Create default projects file if not exists
+if not os.path.exists(PROJECTS_FILE):
+    pd.DataFrame(columns=["Project Name", "Description", "Start Date", "End Date"]).to_excel(PROJECTS_FILE, index=False)
 
-class Project(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    start_date = db.Column(db.Date, nullable=False)
-    end_date = db.Column(db.Date, nullable=False)
-    image_filename = db.Column(db.String(255), nullable=True)
+print(f"🔹 DEBUG: Current Admin Password: {PASSWORD}")
 
 # Utility for file validation
 def allowed_file(filename):
@@ -109,6 +87,24 @@ def format_date_ddmmyyyy(date):
     if pd.notnull(date):
         return datetime.strptime(str(date), "%Y-%m-%d").strftime("%d/%m/%Y")
     return None
+
+# Middleware to protect routes
+def login_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not session.get("logged_in"):
+            flash("You must log in to access this page.", "error")
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return wrapper
+
+# Template filter to format date strings
+@app.template_filter('datetimeformat')
+def datetimeformat(value):
+    try:
+        return datetime.strptime(value, '%Y-%m-%d').strftime('%d/%m/%Y')
+    except Exception:
+        return value
 
 
 # Define Base Directory
