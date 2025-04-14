@@ -2,7 +2,10 @@ import os
 from datetime import datetime
 import pandas as pd
 import requests
-from flask import Flask, render_template, send_from_directory, request, redirect, url_for, session, flash, send_file, jsonify
+from flask import (
+    Flask, render_template, send_from_directory, request,
+    redirect, url_for, session, flash, send_file, jsonify
+)
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from functools import wraps
@@ -49,13 +52,14 @@ WAHOO_VEHICLES_FILE = os.path.join(BASE_DIR, "wahoo_pool_vehicles.xlsx")
 # Allowed extensions
 ALLOWED_EXTENSIONS = {"pdf", "docx", "jpg", "jpeg", "png"}
 
-# Project images
+# Project images directory
 PROJECT_IMAGES_DIR = os.path.join(BASE_DIR, "static", "project_images")
 os.makedirs(PROJECT_IMAGES_DIR, exist_ok=True)
 
 # Main directory for company folders
 MAIN_DIR = os.path.join(BASE_DIR, "CompanyFolders")
 os.makedirs(MAIN_DIR, exist_ok=True)
+
 
 # Logo path setup
 logo_filename = "default_logo.png"
