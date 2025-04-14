@@ -3,8 +3,8 @@ from datetime import datetime
 import pandas as pd
 import requests
 from flask import (
-    Flask, render_template, send_from_directory, request,
-    redirect, url_for, session, flash, send_file, jsonify
+    Flask, render_template, request, redirect,
+    url_for, session, flash, send_file
 )
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
@@ -14,50 +14,129 @@ from flask_migrate import Migrate
 from flask_caching import Cache
 from sqlalchemy import create_engine
 
+
 # Load environment variables
 load_dotenv()
 
 # Base directory
 BASE_DIR = os.getcwd()
+DATA_DIR = os.path.join(BASE_DIR, "data")
+os.makedirs(DATA_DIR, exist_ok=True)
 
-# Initialize Flask app
-app = Flask(__name__, template_folder='Templates')
+# Flask App
+app = Flask(__name__, template_folder="Templates")
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret_key")
 
-# Set DB URL
-DATABASE_URL = os.getenv("DATABASE_URL")
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")
-
-app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-
-# Cache configuration
+# Cache
 cache = Cache(app, config={"CACHE_TYPE": "simple"})
 
-# Load admin password
-PASSWORD = os.getenv("ADMIN_PASSWORD", "default_fallback_password")
+# Password
+PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin.123.")
 
-# File paths
-EMPLOYEE_FILE = os.path.join(BASE_DIR, "employees.xlsx")
-EXCEL_FILE = os.path.join(BASE_DIR, "companies.xlsx")
-PROJECTS_FILE = os.path.join(BASE_DIR, "projects.xlsx")
-HARM_DRIVE_FILE = os.path.join(BASE_DIR, "HarmDriveData.xlsx")
-WAHOO_VEHICLES_FILE = os.path.join(BASE_DIR, "wahoo_pool_vehicles.xlsx")
+# File Paths
+EMPLOYEE_FILE = os.path.join(DATA_DIR, "employees.csv")
+COMPANY_FILE = os.path.join(DATA_DIR, "companies.csv")
+PROJECT_FILE = os.path.join(DATA_DIR, "projects.csv")
+HARM_FILE = os.path.join(DATA_DIR, "harm_drive_vehicles.csv")
+WAHOO_FILE = os.path.join(DATA_DIR, "wahoo_pool_vehicles.csv")
 
 # Allowed extensions
 ALLOWED_EXTENSIONS = {"pdf", "docx", "jpg", "jpeg", "png"}
 
-# Project images directory
-PROJECT_IMAGES_DIR = os.path.join(BASE_DIR, "static", "project_images")
-os.makedirs(PROJECT_IMAGES_DIR, exist_ok=True)
+# Util
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Main directory for company folders
-MAIN_DIR = os.path.join(BASE_DIR, "CompanyFolders")
-os.makedirs(MAIN_DIR, exist_ok=True)
+def calculate_expiry(rego_date):
+    try:
+        today = datetime.today()
+        rego_date = datetime.strptime(rego_date, '%Y-%m-%d')
+        return (rego_date - today).days
+    except Exception:
+        return None
+
+@app.template_filter('datetimeformat')
+def datetimeformat(value):
+    try:
+        return datetime.strptime(value, '%Y-%m-%d').strftime('%d/%m/%Y')
+    except Exception:
+        return value
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("logged_in"):
+            flash("Please log in first.", "warning")
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        if request.form["password"] == PASSWORD:
+            session["logged_in"] = True
+            flash("Login successful", "success")
+            return redirect(url_for("index"))
+        else:
+            flash("Wrong password", "danger")
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("Logged out", "info")
+    return redirect(url_for("login"))
+
+@app.route("/")
+@login_required
+def index():
+    try:
+        vehicles_df = pd.concat([
+            pd.read_csv(WAHOO_FILE),
+            pd.read_csv(HARM_FILE)
+        ], ignore_index=True)
+        vehicles = vehicles_df.to_dict(orient="records")
+        for v in vehicles:
+            v["Expiry"] = calculate_expiry(v.get("Rego Renewal Date", ""))
+    except Exception as e:
+        flash(f"Error reading vehicle data: {e}", "danger")
+        vehicles = []
+
+    return render_template("index.html", vehicles=vehicles)
+
+@app.route("/employees")
+@login_required
+def employees():
+    try:
+        df = pd.read_csv(EMPLOYEE_FILE)
+        employees = df.to_dict(orient="records")
+        return render_template("employees.html", employees=employees)
+    except Exception as e:
+        flash(f"Error loading employees: {e}", "danger")
+        return redirect(url_for("index"))
+
+@app.route("/companies")
+@login_required
+def companies():
+    try:
+        df = pd.read_csv(COMPANY_FILE)
+        companies = df.to_dict(orient="records")
+        return render_template("companies.html", companies=companies)
+    except Exception as e:
+        flash(f"Error loading companies: {e}", "danger")
+        return redirect(url_for("index"))
+
+@app.route("/projects")
+@login_required
+def projects():
+    try:
+        df = pd.read_csv(PROJECT_FILE)
+        projects = df.to_dict(orient="records")
+        return render_template("projects.html", projects=projects)
+    except Exception as e:
+        flash(f"Error loading projects: {e}", "danger")
+        return redirect(url_for("index"))
 
 
 # Logo path setup
