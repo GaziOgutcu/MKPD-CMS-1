@@ -8,6 +8,8 @@ from flask import (
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from functools import wraps
+from flask_caching import Cache
+
 
 # Load environment variables
 load_dotenv()
@@ -24,6 +26,9 @@ os.makedirs(PROJECT_IMAGE_DIR, exist_ok=True)
 # Flask App
 app = Flask(__name__, template_folder="Templates")
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret_key")
+
+cache = Cache(app, config={"CACHE_TYPE": "simple"})
+
 
 # Password
 PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin.123.")
