@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 import pandas as pd
-import requests
 from flask import (
     Flask, render_template, request, redirect,
     url_for, session, flash, send_file
@@ -9,11 +8,6 @@ from flask import (
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from functools import wraps
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_caching import Cache
-from sqlalchemy import create_engine
-
 
 # Load environment variables
 load_dotenv()
@@ -21,14 +15,15 @@ load_dotenv()
 # Base directory
 BASE_DIR = os.getcwd()
 DATA_DIR = os.path.join(BASE_DIR, "data")
+LOGO_DIR = os.path.join(BASE_DIR, "static", "logos")
+PROJECT_IMAGE_DIR = os.path.join(BASE_DIR, "static", "project_images")
 os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(LOGO_DIR, exist_ok=True)
+os.makedirs(PROJECT_IMAGE_DIR, exist_ok=True)
 
 # Flask App
 app = Flask(__name__, template_folder="Templates")
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret_key")
-
-# Cache
-cache = Cache(app, config={"CACHE_TYPE": "simple"})
 
 # Password
 PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin.123.")
@@ -43,7 +38,6 @@ WAHOO_FILE = os.path.join(DATA_DIR, "wahoo_pool_vehicles.csv")
 # Allowed extensions
 ALLOWED_EXTENSIONS = {"pdf", "docx", "jpg", "jpeg", "png"}
 
-# Util
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -102,7 +96,6 @@ def index():
     except Exception as e:
         flash(f"Error reading vehicle data: {e}", "danger")
         vehicles = []
-
     return render_template("index.html", vehicles=vehicles)
 
 @app.route("/employees")
@@ -138,6 +131,33 @@ def projects():
         flash(f"Error loading projects: {e}", "danger")
         return redirect(url_for("index"))
 
+@app.route("/add_employee", methods=["GET", "POST"])
+@login_required
+def add_employee():
+    if request.method == "POST":
+        try:
+            new_emp = {
+                "Name": request.form["name"].strip(),
+                "Family Name": request.form["family_name"].strip(),
+                "TFN": request.form["tfn"].strip(),
+                "ABN": request.form["abn"].strip(),
+                "Address": request.form["address"].strip(),
+                "Email": request.form["email"].strip(),
+                "Phone": request.form["phone"].strip()
+            }
+            if os.path.exists(EMPLOYEE_FILE):
+                df = pd.read_csv(EMPLOYEE_FILE)
+                df = pd.concat([df, pd.DataFrame([new_emp])], ignore_index=True)
+            else:
+                df = pd.DataFrame([new_emp])
+            df.to_csv(EMPLOYEE_FILE, index=False)
+            flash("Employee added successfully!", "success")
+            return redirect(url_for("employees"))
+        except Exception as e:
+            flash(f"Error saving employee: {e}", "danger")
+            return redirect(url_for("add_employee"))
+    return render_template("add_employee.html")
+
 
 # Logo path setup
 logo_filename = "default_logo.png"
@@ -147,71 +167,6 @@ if os.path.exists(logo_path):
 
 print(f"🔹 DEBUG: Current Admin Password: {PASSWORD}")
 
-# Database Models
-class Company(db.Model):
-    __tablename__ = 'companies'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    registration_date = db.Column(db.DateTime)
-    abn = db.Column(db.String(20), unique=True)
-    acn = db.Column(db.String(20))
-    company_type = db.Column(db.String(50))
-    registered_address = db.Column(db.Text)
-    qbcc_license_number = db.Column(db.String(50))
-    document_folder = db.Column(db.String(255))
-    
-    def __repr__(self):
-        return f"<Company {self.name}>"
-
-class Employee(db.Model):
-    __tablename__ = 'employees'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    family_name = db.Column(db.String(100), nullable=False)
-    tfn = db.Column(db.String(20))
-    abn = db.Column(db.String(20))
-    address = db.Column(db.Text)
-    email = db.Column(db.String(120))
-    phone = db.Column(db.String(20))
-    
-    def __repr__(self):
-        return f"<Employee {self.name} {self.family_name}>"
-
-class Project(db.Model):
-    __tablename__ = 'projects'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False, unique=True)
-    description = db.Column(db.Text)
-    start_date = db.Column(db.DateTime)
-    end_date = db.Column(db.DateTime)
-    image_filename = db.Column(db.String(255))
-    
-    def __repr__(self):
-        return f"<Project {self.name}>"
-
-class Vehicle(db.Model):
-    __tablename__ = 'vehicles'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    plate = db.Column(db.String(20), nullable=False, unique=True)
-    type = db.Column(db.String(50))
-    vin = db.Column(db.String(50))
-    rego_renewal_date = db.Column(db.String(10))
-    insurance_renewal_date = db.Column(db.String(10))
-    expiry = db.Column(db.Integer)
-    value = db.Column(db.Float)
-    transfer_fee = db.Column(db.Float)
-    
-    def __repr__(self):
-        return f"<Vehicle {self.plate}>"
-    
-    @property
-    def calculated_expiry(self):
-        """Dynamically calculate days until registration expiry"""
-        return calculate_expiry(self.rego_renewal_date)
 
 # Utility functions
 def allowed_file(filename):
