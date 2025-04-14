@@ -22,7 +22,7 @@ app = Flask(__name__, template_folder='Templates')
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "fallback_secret_key")
 
 # PostgreSQL configuration
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://localhost/myapp")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
@@ -63,18 +63,87 @@ logo_path = os.path.join(BASE_DIR, "static", "logos", logo_filename)
 if os.path.exists(logo_path):
     print(f"✅ Logo found: {logo_path}")
 
-# Create default projects file if not exists
-if not os.path.exists(PROJECTS_FILE):
-    pd.DataFrame(columns=["Project Name", "Description", "Start Date", "End Date"]).to_excel(PROJECTS_FILE, index=False)
-
 print(f"🔹 DEBUG: Current Admin Password: {PASSWORD}")
 
-# Utility for file validation
+# Database Models
+class Company(db.Model):
+    __tablename__ = 'companies'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    registration_date = db.Column(db.DateTime)
+    abn = db.Column(db.String(20), unique=True)
+    acn = db.Column(db.String(20))
+    company_type = db.Column(db.String(50))
+    registered_address = db.Column(db.Text)
+    qbcc_license_number = db.Column(db.String(50))
+    document_folder = db.Column(db.String(255))
+    
+    def __repr__(self):
+        return f"<Company {self.name}>"
+
+class Employee(db.Model):
+    __tablename__ = 'employees'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    family_name = db.Column(db.String(100), nullable=False)
+    tfn = db.Column(db.String(20))
+    abn = db.Column(db.String(20))
+    address = db.Column(db.Text)
+    email = db.Column(db.String(120))
+    phone = db.Column(db.String(20))
+    
+    def __repr__(self):
+        return f"<Employee {self.name} {self.family_name}>"
+
+class Project(db.Model):
+    __tablename__ = 'projects'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False, unique=True)
+    description = db.Column(db.Text)
+    start_date = db.Column(db.DateTime)
+    end_date = db.Column(db.DateTime)
+    image_filename = db.Column(db.String(255))
+    
+    def __repr__(self):
+        return f"<Project {self.name}>"
+
+class Vehicle(db.Model):
+    __tablename__ = 'vehicles'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    plate = db.Column(db.String(20), nullable=False, unique=True)
+    type = db.Column(db.String(50))
+    vin = db.Column(db.String(50))
+    rego_renewal_date = db.Column(db.String(10))
+    insurance_renewal_date = db.Column(db.String(10))
+    expiry = db.Column(db.Integer)
+    value = db.Column(db.Float)
+    transfer_fee = db.Column(db.Float)
+    
+    def __repr__(self):
+        return f"<Vehicle {self.plate}>"
+    
+    @property
+    def calculated_expiry(self):
+        """Dynamically calculate days until registration expiry"""
+        return calculate_expiry(self.rego_renewal_date)
+
+# Utility functions
 def allowed_file(filename):
+    """
+    Check if a file has an allowed extension
+    """
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Utility to calculate expiry
 def calculate_expiry(rego_date):
+    """
+    Calculate the number of days until a given date.
+    :param rego_date: Registration renewal date as a string in 'YYYY-MM-DD' format.
+    :return: Number of days until the date or None if invalid.
+    """
     try:
         today = datetime.today()
         rego_date = datetime.strptime(rego_date, '%Y-%m-%d')
@@ -82,8 +151,10 @@ def calculate_expiry(rego_date):
     except Exception:
         return None
 
-# Utility to format date
 def format_date_ddmmyyyy(date):
+    """
+    Format a date object to DD/MM/YYYY string format
+    """
     if pd.notnull(date):
         return datetime.strptime(str(date), "%Y-%m-%d").strftime("%d/%m/%Y")
     return None
@@ -106,106 +177,65 @@ def datetimeformat(value):
     except Exception:
         return value
 
+# Setup functions
+def setup_directories():
+    """Ensure all required directories exist"""
+    os.makedirs(PROJECT_IMAGES_DIR, exist_ok=True)
+    os.makedirs(MAIN_DIR, exist_ok=True)
+    os.makedirs(os.path.join(BASE_DIR, "static", "logos"), exist_ok=True)
 
-# Define Base Directory
-MAIN_DIR = os.path.join(BASE_DIR, "CompanyFolders")
-os.makedirs(MAIN_DIR, exist_ok=True)  # Ensure it exists
+def setup_default_files():
+    """Create default Excel files if they don't exist"""
+    # Create default projects file if not exists
+    if not os.path.exists(PROJECTS_FILE):
+        pd.DataFrame(columns=["Project Name", "Description", "Start Date", "End Date", "Image Filename"]).to_excel(
+            PROJECTS_FILE, index=False, engine="openpyxl")
+        print(f"✅ Created default projects file: {PROJECTS_FILE}")
+        
+    # Create default employees file if not exists
+    if not os.path.exists(EMPLOYEE_FILE):
+        pd.DataFrame(columns=["Name", "Family Name", "TFN", "ABN", "Address", "Email", "Phone"]).to_excel(
+            EMPLOYEE_FILE, index=False, engine="openpyxl")
+        print(f"✅ Created default employees file: {EMPLOYEE_FILE}")
+        
+    # Create default companies file if not exists
+    if not os.path.exists(EXCEL_FILE):
+        pd.DataFrame(columns=["Company Name", "Registration Date", "ABN", "ACN", "Type", "Registered Address", 
+                             "QBCC License Number", "Documents"]).to_excel(
+            EXCEL_FILE, index=False, engine="openpyxl")
+        print(f"✅ Created default companies file: {EXCEL_FILE}")
+        
+    # Setup Harm Drive data file
+    setup_harm_drive_file()
+    
+    # Setup Wahoo vehicles file
+    setup_wahoo_vehicles_file()
 
+def setup_harm_drive_file():
+    """Create HarmDriveData.xlsx if it doesn't exist"""
+    if not os.path.exists(HARM_DRIVE_FILE):
+        data = {
+            "Plate": ["371RLI", "295RMK", "975SMU"],
+            "Type": ["Triton", "BT-50", "Triton"],
+            "VIN": ["MMAENKA40BD006265", "MM0UNY0W400891903", "MMAJNKB40CD018749"],
+            "Rego Renewal Date": ["2025-03-25", "2025-03-06", "2025-03-20"],
+            "Insurance Renewal (CTP) Date": ["", "", ""],
+            "Expiry": [105, 86, 100],
+            "Value": [10000, 12500, 12500],
+            "Transfer Fee": [None, 406.5, 406.5]
+        }
+        df = pd.DataFrame(data)
+        df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
+        print(f"✅ Created HarmDriveData.xlsx file")
 
-logo_filename = "default_logo.png"  # Ensure it has a default value
-logo_path = os.path.join(BASE_DIR, "static", "logos", logo_filename)
-
-if os.path.exists(logo_path):
-    print(f"✅ Logo found: {logo_path}")  # ✅ Fixed
-
-
-
-if not os.path.exists(PROJECTS_FILE):
-    pd.DataFrame(columns=["Project Name", "Description", "Start Date", "End Date"]).to_excel(PROJECTS_FILE, index=False)
-
-
-print(f"🔹 DEBUG: Current Admin Password: {PASSWORD}")
-
-
-# Utility to check allowed file extensions
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# Middleware to protect routes
-def login_required(f):
-    @wraps(f)  # 🔹 Preserves function metadata
-    def wrapper(*args, **kwargs):
-        if not session.get("logged_in"):
-            flash("You must log in to access this page.", "error")
-            return redirect(url_for("login"))
-        return f(*args, **kwargs)
-    return wrapper
-
-def calculate_expiry(rego_date):
-    """
-    Calculate the number of days until a given date.
-    :param rego_date: Rego renewal date as a string in 'YYYY-MM-DD' format.
-    :return: Number of days until the date or None if invalid.
-    """
-    try:
-        today = datetime.today()
-        rego_date = datetime.strptime(rego_date, '%Y-%m-%d')
-        return (rego_date - today).days
-    except Exception:
-        return None
-
-def format_date_ddmmyyyy(date):
-    if pd.notnull(date):
-        return datetime.strptime(str(date), "%Y-%m-%d").strftime("%d/%m/%Y")
-    return None
-
-
-@cache.cached(timeout=600)  # Cache for 10 minutes
-def get_qld_construction_news():
-    # Load API key securely (replace with a default fallback if needed)
-    api_key = os.getenv('NEWS_API_KEY', 'bfb864ec86be43f49b257cb04ff2ab0f')  # Secure environment variable
-
-    # Endpoint for the News API
-    endpoint = 'https://newsapi.org/v2/everything'
-
-    # Define search parameters
-    params = {
-        'q': 'Queensland construction',
-        'language': 'en',
-        'sortBy': 'publishedAt',
-        'pageSize': 20,  # Limit results to the first 20 articles for efficiency
-        'apiKey': api_key
-    }
-
-    try:
-        # Make the API request
-        response = requests.get(endpoint, params=params)
-        response.raise_for_status()  # Raise HTTPError for bad status codes
-
-        # Parse JSON response
-        data = response.json()
-
-        # Extract relevant fields for articles
-        articles = data.get('articles', [])
-        filtered_articles = []
-        for article in articles:
-            filtered_articles.append({
-                'title': article.get('title', 'No title'),
-                'url': article.get('url', '#'),
-                'publishedAt': article.get('publishedAt', 'Unknown date')
-            })
-
-        return filtered_articles  # Return cleaned list of articles
-
-    except requests.exceptions.RequestException as e:
-        # Handle connection or request-related errors
-        print(f"Error fetching news: {e}")
-        return []
-
-    except ValueError as e:
-        # Handle JSON parsing errors
-        print(f"Error parsing response JSON: {e}")
-        return []
+def setup_wahoo_vehicles_file():
+    """Create wahoo_pool_vehicles.xlsx if it doesn't exist"""
+    if not os.path.exists(WAHOO_VEHICLES_FILE):
+        required_columns = ["Plate", "Type", "VIN", "Rego Renewal Date", "Insurance Renewal (CTP) Date", 
+                           "Value", "Transfer Fee", "Expiry"]
+        df = pd.DataFrame(columns=required_columns)
+        df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
+        print(f"✅ Created Wahoo pool vehicles file")
 
 def migrate_excel_to_db():
     """Script to migrate data from Excel files to PostgreSQL database."""
@@ -274,7 +304,7 @@ def migrate_excel_to_db():
             
             employees_count = 0
             for _, row in employees_df.iterrows():
-                # Check if employee already exists (by name and family name for simplicity)
+                # Check if employee already exists
                 existing_employee = Employee.query.filter_by(
                     name=str(row['Name']), 
                     family_name=str(row['Family Name'])
@@ -420,6 +450,9 @@ def migrate_excel_to_db():
                     rego_date = None
                     insurance_date = None
                 
+                # Calculate expiry days
+                expiry = calculate_expiry(rego_date) if rego_date else None
+                
                 # Create vehicle object
                 vehicle = Vehicle(
                     plate=str(row['Plate']),
@@ -427,7 +460,7 @@ def migrate_excel_to_db():
                     vin=str(row['VIN']),
                     rego_renewal_date=rego_date,
                     insurance_renewal_date=insurance_date,
-                    expiry=int(row['Expiry']) if pd.notna(row.get('Expiry', None)) else None,
+                    expiry=expiry,
                     value=float(row['Value']) if pd.notna(row.get('Value', None)) else None,
                     transfer_fee=float(row['Transfer Fee']) if pd.notna(row.get('Transfer Fee', None)) else None
                 )
@@ -453,27 +486,79 @@ def migrate_excel_to_db():
     
     print("Migration complete!")
 
+@cache.cached(timeout=600)  # Cache for 10 minutes
+def get_qld_construction_news():
+    """
+    Fetch recent Queensland construction news from News API
+    """
+    # Load API key securely (replace with a default fallback if needed)
+    api_key = os.getenv('NEWS_API_KEY', 'bfb864ec86be43f49b257cb04ff2ab0f')
 
-# ✅ Route to serve the Navbar file
+    # Endpoint for the News API
+    endpoint = 'https://newsapi.org/v2/everything'
+
+    # Define search parameters
+    params = {
+        'q': 'Queensland construction',
+        'language': 'en',
+        'sortBy': 'publishedAt',
+        'pageSize': 20,  # Limit results to the first 20 articles for efficiency
+        'apiKey': api_key
+    }
+
+    try:
+        # Make the API request
+        response = requests.get(endpoint, params=params)
+        response.raise_for_status()  # Raise HTTPError for bad status codes
+
+        # Parse JSON response
+        data = response.json()
+
+        # Extract relevant fields for articles
+        articles = data.get('articles', [])
+        filtered_articles = []
+        for article in articles:
+            filtered_articles.append({
+                'title': article.get('title', 'No title'),
+                'url': article.get('url', '#'),
+                'publishedAt': article.get('publishedAt', 'Unknown date')
+            })
+
+        return filtered_articles  # Return cleaned list of articles
+
+    except requests.exceptions.RequestException as e:
+        # Handle connection or request-related errors
+        print(f"Error fetching news: {e}")
+        return []
+    except ValueError as e:
+        # Handle JSON parsing errors
+        print(f"Error parsing response JSON: {e}")
+        return []
+
+# Template utility for company logos
+@app.template_global()
+def get_company_logo_static(company_name, abn):
+    """Returns the static URL for a company logo or a default image."""
+    logo_filename = f"{company_name.replace(' ', '_')}_{abn}.png"  # Replace spaces with underscores
+    logo_path = os.path.join("static", "logos", logo_filename)
+
+    print(f"🔍 Checking for logo: {logo_path}")  # Debugging output
+
+    if os.path.exists(os.path.join(BASE_DIR, logo_path)):
+        return url_for("static", filename=f"logos/{logo_filename}")
+    else:
+        print(f"⚠️ Logo not found, using default logo.")  # Debugging output
+        return url_for("static", filename="logos/default_logo.png")
+
+# Routes
 @app.route("/navbar")
 def navbar():
+    """Serve the navbar template"""
     return render_template("navbar.html")
-
-
-@app.template_filter('datetimeformat')
-def datetimeformat(value):
-    """
-    Convert a date string from 'YYYY-MM-DD' to 'DD/MM/YYYY'.
-    """
-    try:
-        return datetime.strptime(value, '%Y-%m-%d').strftime('%d/%m/%Y')
-    except Exception:
-        return value  # If the date is invalid, return the original value
-
-
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """Handle user login"""
     if request.method == "POST":
         password = request.form.get("password")
         if password == PASSWORD:
@@ -486,6 +571,7 @@ def login():
 
 @app.route("/logout")
 def logout():
+    """Handle user logout"""
     session.clear()
     flash("You have been logged out.", "success")
     return redirect(url_for("login"))
@@ -493,13 +579,13 @@ def logout():
 @app.route("/")
 @login_required
 def index():
+    """Main dashboard page"""
     try:
-        # Initialize variables
-        vehicles = []
-        news_items = get_qld_construction_news()
-
-        # Vehicles logic
+        # Load vehicles with registration dates nearing expiry
         vehicles = Vehicle.query.all()
+        
+        # Get construction news
+        news_items = get_qld_construction_news()
 
         # Pagination Logic
         PER_PAGE = 5  # 5 news items per page
@@ -513,273 +599,79 @@ def index():
         flash(f"Error loading data: {e}", "error")
         return render_template("index.html", vehicles=[], news_items=[], page=1, total_pages=1)
 
-
-@app.route("/CompanyFolders/<path:filename>")
-def serve_company_file(filename):
-    """Serve files from the CompanyFolders directory."""
-    return send_from_directory(MAIN_DIR, filename)
-def setup_harm_drive_file():
-    harm_drive_file = os.path.join(os.getcwd(), "HarmDriveData.xlsx")
-    if not os.path.exists(harm_drive_file):
-        data = {
-            "Plate": ["371RLI", "295RMK", "975SMU"],
-            "Type": ["Triton", "BT-50", "Triton"],
-            "VIN": ["MMAENKA40BD006265", "MM0UNY0W400891903", "MMAJNKB40CD018749"],
-            "Rego Renewal Date": ["25/03/2025", "06/03/2025", "20/03/2025"],
-            "Insurance Renewal (CTP) Date": ["", "", ""],
-            "Expiry": [105, 86, 100],
-            "Value": [10000, 12500, 12500],
-            "Transfer Fee": [None, 406.5, 406.5]
-        }
-        df = pd.DataFrame(data)
-        df.to_excel(harm_drive_file, index=False, engine="openpyxl")
-        print("HarmDriveData.xlsx created.")
-
-
-# ✅ Fetch All Vehicles (Replaces Pandas Read Excel)
-@app.route("/harm_drive")
+@app.route("/employees")
 @login_required
-def harm_drive():
-    vehicles = Vehicle.query.all()  # Fetch all vehicles from PostgreSQL
-    return render_template("harm_drive.html", vehicles=vehicles)
-
-# ✅ Add New Vehicle (Replaces Pandas Excel Handling)
-@app.route("/add_vehicle", methods=["POST"])
-@login_required
-def add_vehicle():
+def employees():
+    """Display list of employees"""
     try:
-        # Get form data
-        plate = request.form.get("plate", "").strip()
-        vehicle_type = request.form.get("type", "").strip()
-        vin = request.form.get("vin", "").strip()
-
-        # Validate data
-        if not plate or not vehicle_type or not vin:
-            flash("All fields are required", "error")
-            return redirect(url_for("harm_drive"))
-            
-        # Check if vehicle already exists
-        existing = Vehicle.query.filter_by(plate=plate).first()
-        if existing:
-            flash("Vehicle with this plate already exists", "error")
-            return redirect(url_for("harm_drive"))
-        
-        # Create new vehicle
-        new_vehicle = Vehicle(
-            plate=plate,
-            type=vehicle_type,
-            vin=vin,
-            rego_renewal_date=request.form["rego_renewal_date"].strip(),
-            insurance_renewal_date=request.form.get("ctp_date", "").strip(),
-            value=float(request.form["value"]),
-            transfer_fee=float(request.form.get("transfer_fee", 0))
-        )
-        db.session.add(new_vehicle)
-        db.session.commit()
-        flash("Vehicle added successfully!", "success")
-    except KeyError as e:
-        flash(f"Missing required field: {e}", "error")
-    except ValueError as e:
-        flash(f"Invalid value provided: {e}", "error")
+        all_employees = Employee.query.all()
+        return render_template("employees.html", employees=all_employees)
     except Exception as e:
-        flash(f"Error adding vehicle: {e}", "error")
-
-    return redirect(url_for("harm_drive"))
-
-# ✅ Update a Vehicle’s Registration Date
-@app.route("/update_vehicle", methods=["POST"])
-@login_required
-def update_vehicle():
-    try:
-        plate_to_update = request.form["plate_to_update"].strip()
-        new_date = request.form["new_rego_renewal_date"].strip()
-
-        vehicle = Vehicle.query.filter_by(plate=plate_to_update).first()
-        if vehicle:
-            vehicle.rego_renewal_date = new_date
-            db.session.commit()
-            flash(f"Vehicle {plate_to_update} updated successfully!", "success")
-        else:
-            flash(f"Vehicle {plate_to_update} not found!", "error")
-    except Exception as e:
-        flash(f"Error updating vehicle: {e}", "error")
-
-    return redirect(url_for("harm_drive"))
-
-# ✅ Delete a Vehicle
-@app.route("/delete_vehicle", methods=["POST"])
-@login_required
-def delete_vehicle():
-    try:
-        plate_to_delete = request.form["plate_to_delete"].strip()
-        vehicle = Vehicle.query.filter_by(plate=plate_to_delete).first()
-
-        if vehicle:
-            db.session.delete(vehicle)
-            db.session.commit()
-            flash(f"Vehicle {plate_to_delete} deleted successfully!", "success")
-        else:
-            flash(f"Vehicle {plate_to_delete} not found!", "error")
-    except Exception as e:
-        flash(f"Error deleting vehicle: {e}", "error")
-
-    return redirect(url_for("harm_drive"))
-
-
-# Ensure the Wahoo Vehicles file exists
-def setup_wahoo_vehicles_file():
-    if not os.path.exists(WAHOO_VEHICLES_FILE):
-        required_columns = ["Plate", "Type", "VIN", "Rego Renewal Date", "Insurance Renewal (CTP) Date", "Value", "Transfer Fee", "Expiry"]
-        df = pd.DataFrame(columns=required_columns)  # ✅ Correct
-        df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
-
-
-setup_wahoo_vehicles_file()
-
-@app.route("/wahoo_vehicles")
-@login_required
-def wahoo_vehicles():
-    try:
-        vehicles = Vehicle.query.all()  # Use SQLAlchemy
-        return render_template("wahoo_vehicles.html", wahoo_vehicles=vehicles)
-    except Exception as e:
-        flash(f"Error loading Wahoo Pool Vehicles data: {e}", "error")
+        flash(f"Error loading employees: {e}", "error")
         return redirect(url_for("index"))
 
-
-
-@app.route("/add_wahoo_vehicle", methods=["POST"])
-@login_required
-def add_wahoo_vehicle():
-    try:
-        new_vehicle = Vehicle(
-            plate=request.form["plate"].strip(),
-            type=request.form["type"].strip(),
-            vin=request.form["vin"].strip(),
-            rego_renewal_date=request.form["rego_renewal_date"].strip(),
-            insurance_renewal_date=request.form.get("ctp_date", "").strip(),
-            value=float(request.form["value"]),
-            transfer_fee=float(request.form.get("transfer_fee", 0))
-        )
-        db.session.add(new_vehicle)
-        db.session.commit()
-        flash("✅ Vehicle added successfully!", "success")
-    except Exception as e:
-        flash(f"Error adding vehicle: {e}", "error")
-    return redirect(url_for("harm_drive"))
-
-
-@app.route("/update_wahoo_vehicle", methods=["POST"])
-@login_required
-def update_wahoo_vehicle():
-    try:
-        plate_to_update = request.form["plate_to_update"].strip()
-        new_rego_renewal_date = request.form["new_rego_renewal_date"].strip()
-
-        df = pd.read_excel(WAHOO_VEHICLES_FILE, engine="openpyxl")
-
-        if plate_to_update in df["Plate"].values:
-            df.loc[df["Plate"] == plate_to_update, "Rego Renewal Date"] = new_rego_renewal_date
-            df["Expiry"] = df["Rego Renewal Date"].apply(lambda x: calculate_expiry(x) if pd.notnull(x) else None)
-            df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
-            flash(f"✅ Vehicle {plate_to_update} updated successfully!", "success")
-        else:
-            flash(f"⚠️ Vehicle with plate {plate_to_update} not found.", "error")
-    except Exception as e:
-        flash(f"⚠️ Error updating vehicle: {e}", "error")
-
-    return redirect(url_for("wahoo_vehicles"))
-
-@app.route("/delete_wahoo_vehicle", methods=["POST"])
-@login_required
-def delete_wahoo_vehicle():
-    try:
-        plate_to_delete = request.form["plate_to_delete"].strip()
-
-        df = pd.read_excel(WAHOO_VEHICLES_FILE, engine="openpyxl")
-
-        if plate_to_delete in df["Plate"].values:
-            df = df[df["Plate"] != plate_to_delete]
-            df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
-            flash(f"✅ Vehicle {plate_to_delete} deleted successfully!", "success")
-        else:
-            flash(f"⚠️ Vehicle with plate {plate_to_delete} not found.", "error")
-    except Exception as e:
-        flash(f"⚠️ Error deleting vehicle: {e}", "error")
-
-    return redirect(url_for("wahoo_vehicles"))
-
-
-
-@app.route('/')
-def home():
-    return redirect(url_for('employees'))
-
-
-@app.route('/search_employee', methods=['GET', 'POST'])
+@app.route("/search_employee", methods=["GET", "POST"])
 @login_required
 def search_employee():
-    data = pd.read_excel(EMPLOYEE_FILE)  # Load data from Excel
-    selected_employees = []  # List to store matched employees
+    """Search for an employee by name and family name"""
+    selected_employees = []
 
-    if request.method == 'POST':
-        # Get search criteria from the form
-        search_name = request.form.get('search_name', '').strip().lower()
-        search_family_name = request.form.get('search_family_name', '').strip().lower()
+    if request.method == "POST":
+        search_name = request.form.get("search_name", "").strip().lower()
+        search_family_name = request.form.get("search_family_name", "").strip().lower()
 
         # Ensure both name and family name are provided
         if not search_name or not search_family_name:
             flash("Both Name and Family Name are required!", "error")
-            return render_template('search_employee.html', selected_employees=[])
+            return render_template("search_employee.html", selected_employees=[])
 
-        # Normalize column names and data
-        data.columns = map(str.strip, data.columns)
-        if 'Name' in data.columns and 'Family Name' in data.columns:
-            data['Name'] = data['Name'].astype(str).str.lower().str.strip()
-            data['Family Name'] = data['Family Name'].astype(str).str.lower().str.strip()
+        # Find matching employees in database
+        matching_employees = Employee.query.filter(
+            db.func.lower(Employee.name) == search_name,
+            db.func.lower(Employee.family_name) == search_family_name
+        ).all()
+        
+        if matching_employees:
+            selected_employees = matching_employees
         else:
-            flash("Required columns ('Name' and 'Family Name') not found in the dataset.", "error")
-            return render_template('search_employee.html', selected_employees=[])
+            flash("No employees found with the specified criteria.", "warning")
 
-        # Apply filtering
-        filtered_data = data[
-            (data['Name'] == search_name) & (data['Family Name'] == search_family_name)
-        ]
+    return render_template("search_employee.html", selected_employees=selected_employees)
 
-        # Debugging: Print filtered data
-        print("Filtered Data:\n", filtered_data)
-
-        # Convert filtered data to dictionary
-        selected_employees = filtered_data.to_dict(orient='records')
-
-    return render_template('search_employee.html', selected_employees=selected_employees)
-
-
-
-@app.route('/add_employee', methods=['GET', 'POST'])
+@app.route("/add_employee", methods=["GET", "POST"])
+@login_required
 def add_employee():
-    if request.method == 'POST':
-        # Handle adding logic
-        new_employee = {
-            'Name': request.form['name'],
-            'Family Name': request.form['family_name'],
-            'TFN': request.form['tfn'],
-            'ABN': request.form['abn'],
-            'Address': request.form['address'],
-            'Email': request.form['email'],
-            'Phone': request.form['phone']
-        }
-        data = pd.read_excel(EMPLOYEE_FILE)
-        new_row = pd.DataFrame([new_employee])
-        data = pd.concat([data, new_row], ignore_index=True)
-        data.to_excel(EMPLOYEE_FILE, index=False)
-        return redirect(url_for('employees'))
+    """Add a new employee"""
+    if request.method == "POST":
+        try:
+            # Create new employee record
+            new_employee = Employee(
+                name=request.form["name"].strip(),
+                family_name=request.form["family_name"].strip(),
+                tfn=request.form["tfn"].strip(),
+                abn=request.form["abn"].strip(),
+                address=request.form["address"].strip(),
+                email=request.form["email"].strip(),
+                phone=request.form["phone"].strip()
+            )
+            
+            # Add to database
+            db.session.add(new_employee)
+            db.session.commit()
+            
+            flash("Employee added successfully!", "success")
+            return redirect(url_for("employees"))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error adding employee: {e}", "error")
+            return redirect(url_for("add_employee"))
 
-    return render_template('add_employee.html')
+    return render_template("add_employee.html")
 
 @app.route("/add_company", methods=["GET", "POST"])
 @login_required
 def add_company():
+    """Add a new company"""
     try:
         if request.method == "POST":
             # Collect data from the form
@@ -802,6 +694,12 @@ def add_company():
                 flash("Invalid ABN format. It must be 11 digits.", "error")
                 return redirect(url_for("add_company"))
 
+            # Check if company already exists
+            existing_company = Company.query.filter_by(abn=abn).first()
+            if existing_company:
+                flash("A company with this ABN already exists!", "error")
+                return redirect(url_for("add_company"))
+
             # Create a unique folder for the company
             folder_name = secure_filename(f"{company_name}_{abn}")
             folder_path = os.path.join(MAIN_DIR, folder_name)
@@ -812,7 +710,7 @@ def add_company():
             if not asic_extract or not allowed_file(asic_extract.filename):
                 flash("ASIC Extract is required and must be a valid file!", "error")
                 return redirect(url_for("add_company"))
-            asic_extract.save(os.path.join(folder_path, secure_filename(asic_extract.filename)))
+            asic_extract.
 
             # Handle optional document uploads
             for field_name in ["company_registration", "logo"]:
