@@ -705,18 +705,21 @@ def add_company():
             folder_path = os.path.join(MAIN_DIR, folder_name)
             os.makedirs(folder_path, exist_ok=True)
 
-            # Handle mandatory ASIC Extract upload
+           # Handle mandatory ASIC Extract upload
             asic_extract = request.files.get("asic_extract")
             if not asic_extract or not allowed_file(asic_extract.filename):
                 flash("ASIC Extract is required and must be a valid file!", "error")
                 return redirect(url_for("add_company"))
-            asic_extract.
+
+            # ✅ Save the ASIC Extract file
+            asic_extract.save(os.path.join(folder_path, secure_filename(asic_extract.filename)))
 
             # Handle optional document uploads
             for field_name in ["company_registration", "logo"]:
                 file = request.files.get(field_name)
                 if file and file.filename and allowed_file(file.filename):
                     file.save(os.path.join(folder_path, secure_filename(file.filename)))
+
 
             # Check if company already exists
             existing_company = Company.query.filter_by(abn=abn).first()
