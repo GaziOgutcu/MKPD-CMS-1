@@ -20,7 +20,7 @@
             </div>
 
             <div class="card-body">
-                <form method="POST" action="{{ url_for('add_wahoo_vehicle') }}">
+                <form method="POST" action="{{ url_for('add_vehicle_record', fleet_slug='wahoo') }}">
                     <div class="mb-3">
                         <label class="form-label">Plate Number</label>
                         <input type="text" name="plate" class="form-control" required>

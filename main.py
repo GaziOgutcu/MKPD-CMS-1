@@ -31,10 +31,34 @@ COMPANY_FILE = os.path.join(DATA_DIR, "companies.csv")
 PROJECT_FILE = os.path.join(DATA_DIR, "projects.csv")
 HARM_FILE = os.path.join(DATA_DIR, "harm_drive_vehicles.csv")
 WAHOO_FILE = os.path.join(DATA_DIR, "wahoo_pool_vehicles.csv")
+LOCKYER_FILE = os.path.join(DATA_DIR, "lockyer_sheds_vehicles.csv")
 EXCEL_FILE = os.path.join(DATA_DIR, "companies.xlsx")  # Added missing EXCEL_FILE
 PROJECTS_FILE = os.path.join(DATA_DIR, "projects.xlsx")  # Added missing PROJECTS_FILE
 HARM_DRIVE_FILE = os.path.join(DATA_DIR, "HarmDriveData.xlsx")  # Added missing HARM_DRIVE_FILE
 WAHOO_VEHICLES_FILE = os.path.join(DATA_DIR, "wahoo_pool_vehicles.xlsx")  # Added missing WAHOO_VEHICLES_FILE
+
+VEHICLE_COLUMNS = [
+    "Plate",
+    "Type",
+    "VIN",
+    "Rego Renewal Date",
+    "Insurance Renewal (CTP) Date",
+    "Value",
+    "Transfer Fee",
+]
+
+FLEET_CONFIG = {
+    "wahoo": {
+        "file": WAHOO_FILE,
+        "title": "Wahoo Pool Vehicles",
+        "heading": "Wahoo Pool Construction Vehicles",
+    },
+    "lockyer": {
+        "file": LOCKYER_FILE,
+        "title": "Lockyer Sheds Vehicles",
+        "heading": "Lockyer Sheds Fleet",
+    },
+}
 
 # Flask App configuration
 app = Flask(__name__, template_folder="Templates")
@@ -64,6 +88,51 @@ def calculate_expiry(rego_date):
         return (rego_date - today).days
     except Exception:
         return None
+
+def normalise_date(value):
+    """Normalise a value into YYYY-MM-DD string format or empty string."""
+    if value in (None, ""):
+        return ""
+
+    try:
+        parsed = pd.to_datetime(value)
+        if pd.isna(parsed):
+            return ""
+        return parsed.strftime("%Y-%m-%d")
+    except Exception:
+        # Fallback to string representation (e.g., already formatted)
+        value_str = str(value).strip()
+        try:
+            datetime.strptime(value_str, "%Y-%m-%d")
+            return value_str
+        except Exception:
+            return ""
+
+def load_vehicle_data(file_path):
+    """Load vehicle records from CSV and calculate expiry information."""
+    if not os.path.exists(file_path):
+        return []
+
+    try:
+        df = pd.read_csv(file_path)
+    except Exception as exc:
+        print(f"Failed to read vehicle data from {file_path}: {exc}")
+        return []
+
+    for column in VEHICLE_COLUMNS:
+        if column not in df.columns:
+            df[column] = pd.NA
+
+    df = df[VEHICLE_COLUMNS].copy()
+    df["Rego Renewal Date"] = df["Rego Renewal Date"].apply(normalise_date)
+    df["Insurance Renewal (CTP) Date"] = df["Insurance Renewal (CTP) Date"].apply(normalise_date)
+    df["Value"] = pd.to_numeric(df["Value"], errors="coerce")
+    df["Transfer Fee"] = pd.to_numeric(df["Transfer Fee"], errors="coerce")
+    df["Expiry"] = df["Rego Renewal Date"].apply(lambda date: calculate_expiry(date) if date else None)
+
+    df.sort_values(by=["Rego Renewal Date", "Plate"], inplace=True, na_position="last")
+
+    return df.to_dict(orient="records")
 
 def format_date_ddmmyyyy(date):
     """Format a date object to DD/MM/YYYY string format"""
@@ -126,9 +195,73 @@ def setup_default_files():
         
     # Setup Harm Drive data file
     setup_harm_drive_file()
-    
-    # Setup Wahoo vehicles file
-    setup_wahoo_vehicles_file()
+
+    # Setup vehicle files for each fleet
+    setup_vehicle_file(
+        WAHOO_FILE,
+        [
+            {
+                "Plate": "371RLI",
+                "Type": "Mitsubishi Triton",
+                "VIN": "MMAENKA40BD006265",
+                "Rego Renewal Date": "2025-03-25",
+                "Insurance Renewal (CTP) Date": "2025-05-01",
+                "Value": 48000,
+                "Transfer Fee": 305.00,
+            },
+            {
+                "Plate": "295RMK",
+                "Type": "Mazda BT-50",
+                "VIN": "MM0UNY0W400891903",
+                "Rego Renewal Date": "2025-03-06",
+                "Insurance Renewal (CTP) Date": "2025-04-15",
+                "Value": 52500,
+                "Transfer Fee": 315.00,
+            },
+            {
+                "Plate": "975SMU",
+                "Type": "Mitsubishi Triton",
+                "VIN": "MMAJNKB40CD018749",
+                "Rego Renewal Date": "2025-03-20",
+                "Insurance Renewal (CTP) Date": "2025-04-25",
+                "Value": 49200,
+                "Transfer Fee": 305.00,
+            },
+        ],
+    )
+
+    setup_vehicle_file(
+        LOCKYER_FILE,
+        [
+            {
+                "Plate": "452GHT",
+                "Type": "Isuzu NPR75",
+                "VIN": "JAANPR75L87123456",
+                "Rego Renewal Date": "2025-02-11",
+                "Insurance Renewal (CTP) Date": "2025-03-30",
+                "Value": 68500,
+                "Transfer Fee": 420.00,
+            },
+            {
+                "Plate": "918KLS",
+                "Type": "Hino 300",
+                "VIN": "JHDFS8JJ70K005432",
+                "Rego Renewal Date": "2025-04-05",
+                "Insurance Renewal (CTP) Date": "2025-05-18",
+                "Value": 61250,
+                "Transfer Fee": 395.00,
+            },
+            {
+                "Plate": "625PLQ",
+                "Type": "Fuso Canter",
+                "VIN": "JLDCEKJ02MF004512",
+                "Rego Renewal Date": "2025-01-28",
+                "Insurance Renewal (CTP) Date": "2025-03-10",
+                "Value": 64890,
+                "Transfer Fee": 405.00,
+            },
+        ],
+    )
 
 def setup_harm_drive_file():
     """Create HarmDriveData.xlsx if it doesn't exist"""
@@ -147,14 +280,14 @@ def setup_harm_drive_file():
         df.to_excel(HARM_DRIVE_FILE, index=False, engine="openpyxl")
         print(f"✅ Created HarmDriveData.xlsx file")
 
-def setup_wahoo_vehicles_file():
-    """Create wahoo_pool_vehicles.xlsx if it doesn't exist"""
-    if not os.path.exists(WAHOO_VEHICLES_FILE):
-        required_columns = ["Plate", "Type", "VIN", "Rego Renewal Date", "Insurance Renewal (CTP) Date", 
-                           "Value", "Transfer Fee", "Expiry"]
-        df = pd.DataFrame(columns=required_columns)
-        df.to_excel(WAHOO_VEHICLES_FILE, index=False, engine="openpyxl")
-        print(f"✅ Created Wahoo pool vehicles file")
+def setup_vehicle_file(file_path, default_rows):
+    """Ensure a vehicle CSV exists with the required columns."""
+    if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
+        return
+
+    df = pd.DataFrame(default_rows, columns=VEHICLE_COLUMNS)
+    df.to_csv(file_path, index=False)
+    print(f"✅ Created default vehicle file: {file_path}")
 
 # API functions
 @cache.cached(timeout=600)  # Cache for 10 minutes
@@ -222,18 +355,11 @@ def index():
     """Main dashboard page"""
     try:
         # Load vehicle data
-        try:
-            vehicles_df = pd.concat([
-                pd.read_csv(WAHOO_FILE),
-                pd.read_csv(HARM_FILE)
-            ], ignore_index=True)
-            vehicles = vehicles_df.to_dict(orient="records")
-            for v in vehicles:
-                v["Expiry"] = calculate_expiry(v.get("Rego Renewal Date", ""))
-        except Exception as e:
-            flash(f"Error reading vehicle data: {e}", "danger")
-            vehicles = []
-        
+        wahoo_vehicles = load_vehicle_data(WAHOO_FILE)
+        lockyer_vehicles = load_vehicle_data(LOCKYER_FILE)
+        harm_drive_vehicles = load_vehicle_data(HARM_FILE)
+        vehicles = wahoo_vehicles + lockyer_vehicles + harm_drive_vehicles
+
         # Get construction news
         news_items = get_qld_construction_news()
 
@@ -244,8 +370,15 @@ def index():
         page = max(1, min(page, total_pages))
         paginated_news = news_items[(page - 1) * PER_PAGE: page * PER_PAGE]
 
-        return render_template("index.html", vehicles=vehicles, news_items=paginated_news, 
-                              page=page, total_pages=total_pages)
+        return render_template(
+            "index.html",
+            vehicles=vehicles,
+            wahoo_vehicles=wahoo_vehicles,
+            lockyer_vehicles=lockyer_vehicles,
+            news_items=paginated_news,
+            page=page,
+            total_pages=total_pages,
+        )
     except Exception as e:
         flash(f"Error loading data: {e}", "error")
         return render_template("index.html", vehicles=[], news_items=[], page=1, total_pages=1)
@@ -611,16 +744,83 @@ def download_file(company_folder, filename):
 
     return send_file(filepath, as_attachment=True)
 
-@app.route("/add_wahoo_vehicle", methods=["GET", "POST"])
-@login_required
-def add_wahoo_vehicle():
-    """Add a Wahoo pool vehicle - Basic form handler (to be expanded)"""
-    if request.method == "POST":
-        # TODO: Add logic to process the form submission
-        flash("Vehicle added (this is a placeholder).", "info")
+def render_vehicles_page(fleet_slug):
+    """Render the vehicles page for a given fleet."""
+    config = FLEET_CONFIG.get(fleet_slug)
+    if not config:
+        flash("Unknown vehicle fleet selected.", "danger")
         return redirect(url_for("index"))
 
-    return render_template("add_wahoo_vehicle.html")
+    vehicles = load_vehicle_data(config["file"])
+    return render_template(
+        "vehicles.html",
+        page_title=config["title"],
+        heading=config["heading"],
+        vehicles=vehicles,
+        add_action=url_for("add_vehicle_record", fleet_slug=fleet_slug),
+        update_action=url_for("update_vehicle_record", fleet_slug=fleet_slug),
+        delete_action=url_for("delete_vehicle_record", fleet_slug=fleet_slug),
+    )
+
+
+def _redirect_to_fleet(fleet_slug):
+    """Redirect to the correct vehicles page for a fleet."""
+    if fleet_slug == "wahoo":
+        return redirect(url_for("wahoo_vehicles"))
+    if fleet_slug == "lockyer":
+        return redirect(url_for("lockyer_vehicles"))
+    return redirect(url_for("vehicles_page_route", fleet_slug=fleet_slug))
+
+
+@app.route("/vehicles/<fleet_slug>")
+@login_required
+def vehicles_page_route(fleet_slug):
+    return render_vehicles_page(fleet_slug)
+
+
+@app.route("/wahoo_vehicles")
+@login_required
+def wahoo_vehicles():
+    return render_vehicles_page("wahoo")
+
+
+@app.route("/lockyer_vehicles")
+@login_required
+def lockyer_vehicles():
+    return render_vehicles_page("lockyer")
+
+
+@app.route("/vehicles/<fleet_slug>/add", methods=["POST"])
+@login_required
+def add_vehicle_record(fleet_slug):
+    if fleet_slug not in FLEET_CONFIG:
+        flash("Unknown vehicle fleet selected.", "danger")
+        return redirect(url_for("index"))
+
+    flash("Vehicle creation is not available in this environment.", "info")
+    return _redirect_to_fleet(fleet_slug)
+
+
+@app.route("/vehicles/<fleet_slug>/update", methods=["POST"])
+@login_required
+def update_vehicle_record(fleet_slug):
+    if fleet_slug not in FLEET_CONFIG:
+        flash("Unknown vehicle fleet selected.", "danger")
+        return redirect(url_for("index"))
+
+    flash("Vehicle updates are not available in this environment.", "info")
+    return _redirect_to_fleet(fleet_slug)
+
+
+@app.route("/vehicles/<fleet_slug>/delete", methods=["POST"])
+@login_required
+def delete_vehicle_record(fleet_slug):
+    if fleet_slug not in FLEET_CONFIG:
+        flash("Unknown vehicle fleet selected.", "danger")
+        return redirect(url_for("index"))
+
+    flash("Vehicle deletion is not available in this environment.", "info")
+    return _redirect_to_fleet(fleet_slug)
 
 
 # Initialize the application
