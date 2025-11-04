@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}{{ project.name }} · MKPD CMS{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                {% if project.image_filename %}
+                    <img src="{{ url_for('static', filename='project_images/' ~ project.image_filename) }}" class="card-img-top" alt="{{ project.name }} image">
+                {% endif %}
+                <div class="card-body">
+                    <h1 class="h4">{{ project.name }}</h1>
+                    <p class="text-muted">{{ project.start_date.strftime('%d/%m/%Y') if project.start_date else '—' }} – {{ project.end_date.strftime('%d/%m/%Y') if project.end_date else '—' }}</p>
+                    <p>{{ project.description }}</p>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('view_projects') }}" class="btn btn-outline-secondary">Back to projects</a>
+                <a href="{{ url_for('add_project') }}" class="btn btn-primary">Add another project</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

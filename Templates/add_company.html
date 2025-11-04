@@ -1,121 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- Basic Meta Tags -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MKPD CMS / Add a New Company</title>
+{% extends 'base.html' %}
+{% block title %}Add Company · MKPD CMS{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h4 mb-0">Add New Company</h1>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label for="company_name" class="form-label">Company Name</label>
+                                <input type="text" id="company_name" name="company_name" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="registration_date" class="form-label">Registration Date</label>
+                                <input type="date" id="registration_date" name="registration_date" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="abn" class="form-label">ABN</label>
+                                <input type="text" id="abn" name="abn" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="acn" class="form-label">ACN</label>
+                                <input type="text" id="acn" name="acn" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="type" class="form-label">Company Type</label>
+                                <input type="text" id="type" name="type" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="qbcc_license_number" class="form-label">QBCC License Number</label>
+                                <input type="text" id="qbcc_license_number" name="qbcc_license_number" class="form-control">
+                            </div>
+                            <div class="col-12">
+                                <label for="registered_address" class="form-label">Registered Address</label>
+                                <input type="text" id="registered_address" name="registered_address" class="form-control">
+                            </div>
+                        </div>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+                        <hr class="my-4">
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="asic_extract" class="form-label">ASIC Extract (PDF, DOCX, or image)</label>
+                                <input type="file" id="asic_extract" name="asic_extract" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="company_registration" class="form-label">Company Registration (optional)</label>
+                                <input type="file" id="company_registration" name="company_registration" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="logo" class="form-label">Company Logo (optional)</label>
+                                <input type="file" id="logo" name="logo" class="form-control" accept=".jpg,.jpeg,.png">
+                            </div>
+                        </div>
 
-<body class="bg-light">
-    <!-- ✅ Navbar Placeholder -->
-    <!-- This will dynamically load the navbar -->
-    <div id="navbar-placeholder"></div>
-
-    <!-- ✅ Logo Section -->
-    <div class="container text-center my-4">
-        <a href="/">
-            <img src="{{ url_for('static', filename='logo1.jpg') }}" alt="Company Logo" class="img-fluid main-logo">
-        </a>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('view_company') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-success">Save Company</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <!-- ✅ Add Company Form Section -->
-    <div class="container py-5">
-        <!-- Section Title -->
-        <h1 class="text-center mb-4">Add a New Company</h1>
-
-        <!-- Form for Adding a New Company -->
-        <form method="POST" enctype="multipart/form-data" class="form-container mx-auto" style="max-width: 600px;">
-            <!-- General Fields -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="company_name" class="form-label">Company Name:</label>
-                    <input type="text" name="company_name" id="company_name" class="form-control" placeholder="Enter company name" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="registration_date" class="form-label">Registration Date:</label>
-                    <input type="date" name="registration_date" id="registration_date" class="form-control">
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="abn" class="form-label">ABN:</label>
-                    <input type="text" name="abn" id="abn" class="form-control" placeholder="Enter ABN (11-digit number)" required pattern="\d{11}" title="ABN must be 11 digits">
-                </div>
-                <div class="col-md-6">
-                    <label for="qbcc_license_number" class="form-label">QBCC License Number:</label>
-                    <input type="text" name="qbcc_license_number" id="qbcc_license_number" class="form-control" placeholder="Enter QBCC License Number">
-                </div>
-            </div>
-
-            <!-- Optional Fields -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="acn" class="form-label">ACN:</label>
-                    <input type="text" name="acn" id="acn" class="form-control" placeholder="Enter ACN (optional)">
-                </div>
-                <div class="col-md-6">
-                    <label for="type" class="form-label">Type:</label>
-                    <input type="text" name="type" id="type" class="form-control" placeholder="Enter company type (e.g., Private, Public)">
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="registered_address" class="form-label">Registered Address:</label>
-                <textarea name="registered_address" id="registered_address" class="form-control" rows="3" placeholder="Enter registered address"></textarea>
-            </div>
-
-            <!-- Upload Section -->
-            <div class="mb-4">
-                <h4 class="text-secondary">Upload Documents</h4>
-                <div class="mb-3">
-                    <label for="asic_extract" class="form-label">ASIC Extract (Required):</label>
-                    <input type="file" name="asic_extract" id="asic_extract" class="form-control" accept=".pdf,.docx" required>
-                </div>
-                <div class="mb-3">
-                    <label for="logo" class="form-label">Company Logo:</label>
-                    <input type="file" name="logo" id="logo" class="form-control" accept=".png,.jpg,.jpeg">
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="d-flex justify-content-between">
-                <a href="/" class="btn btn-secondary">Back to Main Menu</a>
-                <button type="submit" class="btn btn-success">Add Company</button>
-            </div>
-        </form>
-    </div>
-
-    <!-- ✅ Footer Section -->
-    <footer class="text-center mt-5">
-        <p class="small text-muted">&copy; 2024 Gazi OGUTCU. All rights reserved.</p>
-    </footer>
-
-    <!-- ✅ JavaScript to Load Navbar -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            fetch("/navbar")
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Navbar file not found!");
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    document.getElementById("navbar-placeholder").innerHTML = data;
-                })
-                .catch(error => console.error("Error loading navbar:", error));
-        });
-    </script>
-
-    <!-- ✅ Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</div>
+{% endblock %}

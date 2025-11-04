@@ -1,308 +1,167 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MKPD CMS</title>
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <!-- Navbar -->
-    <div id="navbar-placeholder"></div>
-
-    <!-- Welcome Text Section -->
-    <div class="text-center my-4">
-        <section class="welcome-text">
-            <h1>Welcome to MKPD CMS</h1>
-            <p>Your central hub for managing companies, vehicles, employees, and projects.</p>
-        </section>
+{% extends 'base.html' %}
+{% block title %}MKPD CMS · Dashboard{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="text-center mb-4">
+        <h1 class="display-5">Welcome to MKPD CMS</h1>
+        <p class="lead">Manage vehicles, companies, employees, and projects from a single secure workspace.</p>
     </div>
 
-    <!-- Dashboard Container -->
-    <div class="container mt-5">
-        <div class="row g-4">
-            <!-- News Section -->
-            <div class="col-lg-4 col-md-6">
-                <div class="card dashboard-card news-card shadow h-100">
-                    <div class="card-header bg-primary text-white text-center">
-                        <h3 class="mb-0">Latest Construction News</h3>
-                    </div>
-                    <div class="card-body overflow-auto" style="max-height: 450px;">
-                        {% if news_items %}
-                            <ul class="list-unstyled">
-                                {% for news in news_items %}
+    <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="h5 mb-0">Latest Construction News</h3>
+                </div>
+                <div class="card-body overflow-auto" style="max-height: 420px;">
+                    {% if news_items %}
+                        <ul class="list-unstyled mb-0">
+                            {% for news in news_items %}
                                 <li class="mb-3 border-bottom pb-2">
-                                    <a href="{{ news['url'] }}" target="_blank" class="text-decoration-none text-primary">
+                                    <a href="{{ news['url'] }}" target="_blank" class="text-decoration-none">
                                         <strong>{{ news['title'] }}</strong>
                                     </a>
                                     <p class="small text-muted mb-0">Published: {{ news['publishedAt'] }}</p>
                                 </li>
-                                {% endfor %}
-                            </ul>
-                            <!-- Pagination -->
-                            <nav aria-label="News pagination">
-                                <ul class="pagination justify-content-center mt-3">
-                                    {% if page > 1 %}
-                                    <li class="page-item"><a class="page-link" href="?page={{ page - 1 }}">Previous</a></li>
-                                    {% endif %}
-                                    {% for p in range(1, total_pages + 1) %}
-                                    <li class="page-item {% if page == p %}active{% endif %}">
-                                        <a class="page-link" href="?page={{ p }}">{{ p }}</a>
-                                    </li>
-                                    {% endfor %}
-                                    {% if page < total_pages %}
-                                    <li class="page-item"><a class="page-link" href="?page={{ page + 1 }}">Next</a></li>
-                                    {% endif %}
-                                </ul>
-                            </nav>
-                        {% else %}
-                            <p class="text-center text-muted">No recent news available.</p>
-                        {% endif %}
-                    </div>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted text-center mb-0">No recent news available.</p>
+                    {% endif %}
                 </div>
+                {% if total_pages > 1 %}
+                <div class="card-footer p-2">
+                    <nav aria-label="News pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                                <a class="page-link" href="?page={{ page - 1 }}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {% for p in range(1, total_pages + 1) %}
+                                <li class="page-item {% if page == p %}active{% endif %}">
+                                    <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                                </li>
+                            {% endfor %}
+                            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                                <a class="page-link" href="?page={{ page + 1 }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
             </div>
+        </div>
 
-            <!-- Vehicles Section -->
-            <div class="col-lg-4 col-md-6">
-                <div class="card dashboard-card vehicles-card shadow h-100">
-                    <div class="card-header bg-danger text-white text-center">
-                        <h3 class="mb-0">Vehicles with Soon-to-Expire Rego</h3>
-                    </div>
-                    <div class="card-body overflow-auto" style="max-height: 450px;">
-                        {% if vehicles and vehicles|length > 0 %}
-                            <table class="table table-bordered table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Plate</th>
-                                        <th>Type</th>
-                                        <th>Expiry (Days)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for vehicle in vehicles %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-danger text-white text-center">
+                    <h3 class="h5 mb-0">Upcoming Rego Renewals</h3>
+                </div>
+                <div class="card-body overflow-auto" style="max-height: 420px;">
+                    {% set expiring = vehicles | selectattr('Expiry', 'ne', None) | list %}
+                    {% if expiring %}
+                        <table class="table table-sm align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">Plate</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col" class="text-center">Due (days)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vehicle in expiring %}
                                     <tr>
                                         <td>{{ vehicle['Plate'] }}</td>
                                         <td>{{ vehicle['Type'] }}</td>
-                                        <td class="text-danger">{{ vehicle['Expiry'] }} Days</td>
+                                        <td class="text-danger text-center">{{ vehicle['Expiry'] }}</td>
                                     </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
-                        {% endif %}
-                    </div>
-                    <!-- Company Info -->
-                    <div class="card-body">
-                        <div class="mb-2 d-flex justify-content-between align-items-center">
-                            <span><strong>Harm Drive CRN:</strong> <span id="crn">142123141</span></span>
-                            <button class="btn-96" onclick="copyToClipboard('142123141', 'Harm Drive CRN')"><span>Copy</span></button>
-                        </div>
-                        <div class="mb-2 d-flex justify-content-between align-items-center">
-                            <span><strong>Company Name:</strong> <span id="company">Harm Drive Pty Ltd</span></span>
-                            <button class="btn-96" onclick="copyToClipboard('Harm Drive Pty Ltd', 'Company Name')"><span>Copy</span></button>
-                        </div>
-                        <div class="mb-2 d-flex justify-content-between align-items-center">
-                            <span><strong>Harm Drive ACN:</strong> <span id="abn">676847242</span></span>
-                            <button class="btn-96" onclick="copyToClipboard('676847242', 'Harm Drive ACN')"><span>Copy</span></button>
-                        </div>
-                    </div>
-                    <!-- Renew Registration Button -->
-                    <div class="text-center p-3">
-                        <a href="https://www.service.transport.qld.gov.au/tmrauthentication/public/Login.xhtml?serviceName=RenewRegistrationMulti&qgovLoginSelected=N&entryPage=/application/Entry.xhtml&exitPage=/public/Farewell.xhtml&executionContext=qt&preferredIaal2Option=&dswid=-9947"
-                            target="_blank"
-                            class="button44">
-                            <span>Renew Registration</span>
-                        </a>
-                    </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-muted text-center mb-0">No upcoming renewals.</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('vehicles_page_route', fleet_slug='harm') }}" class="btn btn-outline-primary btn-sm">Harm Drive Fleet</a>
+                    <a href="{{ url_for('vehicles_page_route', fleet_slug='wahoo') }}" class="btn btn-outline-success btn-sm">Wahoo Pool Fleet</a>
+                    <a href="{{ url_for('vehicles_page_route', fleet_slug='lockyer') }}" class="btn btn-outline-secondary btn-sm">Lockyer Fleet</a>
                 </div>
             </div>
+        </div>
 
-            <!-- Wahoo Pool Vehicles Section -->
-                <div class="col-lg-4 col-md-12">
-                    <div class="card dashboard-card wahoo-vehicles-card shadow h-100">
-                        <div class="card-header bg-success text-white text-center">
-                            <h3 class="mb-0">Wahoo Pool Construction Vehicles</h3>
-                        </div>
-                        <div class="card-body overflow-auto" style="max-height: 450px;">
-                            {% if wahoo_vehicles and wahoo_vehicles|length > 0 %}
-                                <table class="table table-bordered table-hover">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>Plate</th>
-                                            <th>Type</th>
-                                            <th>Expiry (Days)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for vehicle in wahoo_vehicles %}
-                                        <tr>
-                                            <td>{{ vehicle['Plate'] }}</td>
-                                            <td>{{ vehicle['Type'] }}</td>
-                                            <td class="text-danger">{{ vehicle['Expiry'] }} Days</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            {% else %}
-                                <p class="text-center text-muted">No vehicles have soon-to-expire rego.</p>
-                            {% endif %}
-                        </div>
-                        <!-- Add Vehicle Button -->
-                        <div class="text-center p-3">
-                            <!-- Trigger Modal -->
-                            <button class="button44" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
-                                <span>Add Vehicle</span>
-                            </button>
-                        </div>
+        <div class="col-lg-4 col-md-12">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-success text-white text-center">
+                    <h3 class="h5 mb-0">Wahoo Pool Snapshot</h3>
+                </div>
+                <div class="card-body overflow-auto" style="max-height: 420px;">
+                    {% if wahoo_vehicles %}
+                        <table class="table table-sm align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">Plate</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col" class="text-center">Expiry</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vehicle in wahoo_vehicles %}
+                                    <tr>
+                                        <td>{{ vehicle['Plate'] }}</td>
+                                        <td>{{ vehicle['Type'] }}</td>
+                                        <td class="text-center">{{ vehicle['Expiry'] if vehicle['Expiry'] is not none else 'N/A' }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-muted text-center mb-0">No vehicles available.</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#quickAddVehicle">Quick add vehicle</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="quickAddVehicle" tabindex="-1" aria-labelledby="quickAddVehicleLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="quickAddVehicleLabel">Add Wahoo Pool Vehicle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_vehicle_record', fleet_slug='wahoo') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="quick_plate" class="form-label">Plate Number</label>
+                        <input type="text" id="quick_plate" name="plate" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quick_type" class="form-label">Vehicle Type</label>
+                        <input type="text" id="quick_type" name="type" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quick_vin" class="form-label">VIN</label>
+                        <input type="text" id="quick_vin" name="vin" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quick_rego" class="form-label">Rego Renewal Date</label>
+                        <input type="date" id="quick_rego" name="rego_renewal_date" class="form-control">
                     </div>
                 </div>
-
-                <!-- Modal for Adding a Vehicle -->
-                <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header bg-success text-white">
-                                <h5 class="modal-title" id="addVehicleModalLabel">Add Wahoo Pool Vehicle</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <form method="POST" action="{{ url_for('add_wahoo_vehicle') }}">
-
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label for="plate" class="form-label">Plate Number</label>
-                                        <input type="text" id="plate" name="plate" class="form-control" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="type" class="form-label">Vehicle Type</label>
-                                        <input type="text" id="type" name="type" class="form-control" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="expiry" class="form-label">Expiry Date</label>
-                                        <input type="date" id="expiry" name="expiry_date" class="form-control" required>
-                                    </div>                                  
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-success">Add Vehicle</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Add Vehicle</button>
                 </div>
-
-
-    <!-- Footer -->
-    <footer class="text-center mt-5">
-        <p class="small text-muted">&copy; 2024 Gazi OGUTCU. All rights reserved.</p>
-    </footer>
-
-    <!-- JavaScript to Load Navbar -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            fetch("/navbar") // Fetch the navbar.html file via Flask
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Navbar not found!");
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    document.getElementById("navbar-placeholder").innerHTML = data;
-                })
-                .catch(error => console.error("Error loading navbar:", error));
-        });
-    </script>
-
-    <!-- Copy to Clipboard Script -->
-    <script>
-        function copyToClipboard(text, label) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text)
-                    .then(() => showToast(`${label} copied to clipboard!`))
-                    .catch(err => console.error('Clipboard write failed: ', err));
-            } else {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
-                try {
-                    document.execCommand('copy');
-                    showToast(`${label} copied to clipboard!`);
-                } catch (err) {
-                    console.error('Fallback copy failed: ', err);
-                }
-                document.body.removeChild(textarea);
-            }
-        }
-
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.textContent = message;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '20px';
-            toast.style.right = '20px';
-            toast.style.backgroundColor = '#28a745';
-            toast.style.color = '#fff';
-            toast.style.padding = '10px 15px';
-            toast.style.borderRadius = '5px';
-            toast.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-            toast.style.zIndex = '1000';
-            document.body.appendChild(toast);
-            setTimeout(() => document.body.removeChild(toast), 3000);
-        }
-    </script>
-
-    <script>
-        document.querySelector('#addVehicleModal form').addEventListener('submit', function (e) {
-            e.preventDefault(); // Prevent default form submission
-            const form = e.target;
-            const formData = new FormData(form);
-
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => {
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    // ✅ Close the modal properly
-                    const modalElement = document.querySelector('#addVehicleModal');
-                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                    if (modalInstance) {
-                        modalInstance.hide();
-                    }
-
-                    // ✅ Reset form fields
-                    form.reset();
-
-                    // ✅ Show success message
-                    alert(data.message);
-
-                    // ✅ Reload the table (optional)
-                    location.reload(); 
-                } else {
-                    alert('Failed to add vehicle: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while adding the vehicle.');
-            });
-        });
-    </script>
-
-
-</body>
-</html>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

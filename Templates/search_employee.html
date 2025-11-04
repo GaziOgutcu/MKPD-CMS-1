@@ -1,103 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MKPD CMS / View Employee Details</title>
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body class="bg-light">
-
-    <!-- ✅ Navbar Placeholder -->
-    <div id="navbar-placeholder"></div>
-
-    <!-- ✅ Logo Section -->
-    <div class="text-center my-4">
-        <a href="/">
-            <img src="{{ url_for('static', filename='logo1.jpg') }}" alt="Company Logo" class="img-fluid mb-4 main-logo">
-        </a>
-    </div>
-
-    <!-- ✅ Search Employee Section -->
-    <div class="container py-5">
-        <h1 class="text-center text-primary mb-4">Search Employee</h1>
-
-        <!-- Search Form -->
-        <form method="POST" action="/search_employee" class="p-4 border rounded shadow-sm bg-white">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label for="search_name" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="search_name" name="search_name" placeholder="Enter name" required>
+{% extends 'base.html' %}
+{% block title %}Search Employees · MKPD CMS{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h4 mb-0">Search Employee</h1>
                 </div>
-                <div class="col-md-6">
-                    <label for="search_family_name" class="form-label">Family Name</label>
-                    <input type="text" class="form-control" id="search_family_name" name="search_family_name" placeholder="Enter family name" required>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('search_employee') }}" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="search_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="search_name" name="search_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="search_family_name" class="form-label">Family Name</label>
+                            <input type="text" class="form-control" id="search_family_name" name="search_family_name" required>
+                        </div>
+                        <div class="col-12 d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
-            <div class="d-flex justify-content-center mt-4">
-                <button type="submit" class="btn btn-primary px-4">Search</button>
-            </div>
-        </form>
-
-        <!-- Employee Results -->
-        {% if selected_employees %}
-        <div class="mt-5">
-            <h3 class="text-secondary mb-3">Employee Results</h3>
-            <ul class="list-group">
-                {% for employee in selected_employees %}
-                <li class="list-group-item">
-                    <strong>Name:</strong> {{ employee['Name'] }} {{ employee['Family Name'] }} <br>
-                    <strong>TFN:</strong> {{ employee['TFN'] }} <br>
-                    <strong>ABN:</strong> {{ employee['ABN'] }} <br>
-                    <strong>Address:</strong> {{ employee['Address'] }} <br>
-                    <strong>Email:</strong> {{ employee['Email'] }}
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% elif request.method == 'POST' %}
-        <div class="mt-5">
-            <div class="alert alert-warning text-center" role="alert">
-                No employees found matching the search criteria.
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Back Buttons -->
-        <div class="d-flex justify-content-center mt-5">
-            <a href="/" class="btn btn-secondary me-2">Back to Main Menu</a>
+            {% if selected_employees %}
+                <div class="card shadow-sm mt-4">
+                    <div class="card-header bg-light">
+                        <h2 class="h5 mb-0">Results</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            {% for employee in selected_employees %}
+                                <div class="list-group-item">
+                                    <h3 class="h6 mb-1">{{ employee.name }} {{ employee.family_name }}</h3>
+                                    <dl class="row mb-0 small">
+                                        <dt class="col-sm-4">TFN</dt>
+                                        <dd class="col-sm-8">{{ employee.tfn or '—' }}</dd>
+                                        <dt class="col-sm-4">ABN</dt>
+                                        <dd class="col-sm-8">{{ employee.abn or '—' }}</dd>
+                                        <dt class="col-sm-4">Address</dt>
+                                        <dd class="col-sm-8">{{ employee.address or '—' }}</dd>
+                                        <dt class="col-sm-4">Email</dt>
+                                        <dd class="col-sm-8">{{ employee.email or '—' }}</dd>
+                                        <dt class="col-sm-4">Phone</dt>
+                                        <dd class="col-sm-8">{{ employee.phone or '—' }}</dd>
+                                    </dl>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% elif request.method == 'POST' %}
+                <div class="alert alert-info mt-4" role="alert">
+                    No employees found matching the search criteria.
+                </div>
+            {% endif %}
         </div>
     </div>
-
-    <!-- ✅ Footer -->
-    <footer class="text-center mt-5">
-        <p class="small text-muted">&copy; 2024 Gazi OGUTCU. All rights reserved.</p>
-    </footer>
-
-    <!-- ✅ JavaScript to Load Navbar -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            fetch("/navbar")
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Navbar file not found!");
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    document.getElementById("navbar-placeholder").innerHTML = data;
-                })
-                .catch(error => console.error("Error loading navbar:", error));
-        });
-    </script>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</div>
+{% endblock %}
